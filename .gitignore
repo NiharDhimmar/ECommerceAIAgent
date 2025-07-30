@@ -4,3 +4,7 @@ __pycache__/
 *.py[cod]
 .vscode/
 .idea/
+
+# Generated files
+recordings/
+transcripts/

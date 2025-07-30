@@ -18,7 +18,8 @@ call = client.calls.create(
     url=f'{ngrok_url}/voice',
     record=True,
     recording_status_callback=f'{ngrok_url}/recording-complete',
-    recording_status_callback_method='POST'
+    recording_status_callback_method='POST',
+    recording_status_callback_event=['completed']
 )
 
 print(f"Call initiated. SID: {call.sid}")

@@ -14,6 +14,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'change_this_secret')
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 
+
+
 # Logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -23,6 +25,9 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SECURE'] = True
+
+# Conversation logging
+conversation_logs = {}
 
 # Sample questions
 questions = [
@@ -55,9 +60,38 @@ def create_gather(prompt):
     gather.say(prompt, voice='alice')
     return gather
 
+def save_conversation_log(call_sid):
+    """Save conversation log to file"""
+    if call_sid in conversation_logs:
+        try:
+            os.makedirs("transcripts", exist_ok=True)
+            file_path = os.path.join("transcripts", f"{call_sid}.txt")
+            
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(f"Call SID: {call_sid}\n")
+                f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("=" * 50 + "\n\n")
+                
+                for entry in conversation_logs[call_sid]:
+                    f.write(f"{entry}\n")
+            
+            logger.info(f"Conversation log saved: {file_path}")
+            # Clean up the log from memory
+            del conversation_logs[call_sid]
+        except Exception as e:
+            logger.error(f"Failed to save conversation log: {e}")
+
+def add_conversation_log(call_sid, message):
+    """Add a message to the conversation log"""
+    if call_sid not in conversation_logs:
+        conversation_logs[call_sid] = []
+    conversation_logs[call_sid].append(f"[{time.strftime('%H:%M:%S')}] {message}")
+
 @app.route("/")
 def index():
     return "Twilio Voice Flask app is running."
+
+
 
 @app.route("/voice", methods=["POST"])
 def voice():
@@ -66,13 +100,13 @@ def voice():
     resp = VoiceResponse()
     resp.append(create_gather(questions[question_index]))
 
-    # Add recording with transcription
+    # Add recording
+    ngrok_url = os.getenv('NGROK_URL')
     resp.record(
         max_length=3600,
         play_beep=True,
-        transcribe=True,
-        transcribe_callback="/transcription-complete",
-        recording_status_callback="/recording-complete",
+        recording_status_callback=f"{ngrok_url}/recording-complete",
+        recording_status_callback_method="POST",
         recording_status_callback_event=["completed"]
     )
 
@@ -81,6 +115,11 @@ def voice():
     flask_session['first_question_repeated'] = False
     flask_session['last_prompt'] = questions[question_index]
 
+    # Get call SID and start conversation logging
+    call_sid = request.form.get('CallSid')
+    if call_sid:
+        add_conversation_log(call_sid, f"SYSTEM: Initial greeting and first question: '{questions[question_index]}'")
+    
     logger.info("Started call. Asked first question.")
     return Response(str(resp), mimetype='text/xml')
 
@@ -89,16 +128,32 @@ def gather():
     global question_index
     speech = (request.values.get('SpeechResult') or '').strip().lower()
     speech = speech[:256]
+    ngrok_url = os.getenv('NGROK_URL')
 
     gather_start = flask_session.get('gather_start')
     if gather_start:
         logger.info(f"Gather API time: {time.time() - gather_start:.3f}s")
+    
+    # Get call SID for logging
+    call_sid = request.form.get('CallSid')
+    
+    if speech:
+        logger.info(f"USER SAID: {speech}")
+        if call_sid:
+            add_conversation_log(call_sid, f"USER: {speech}")
+    else:
+        logger.info("USER SAID: [No speech detected]")
+        if call_sid:
+            add_conversation_log(call_sid, "USER: [No speech detected]")
 
     resp = VoiceResponse()
     if speech:
         if any(word in speech for word in ["goodbye", "exit", "quit"]):
             resp.say("Thank you for your responses. Goodbye!", voice='alice')
             resp.hangup()
+            if call_sid:
+                add_conversation_log(call_sid, "SYSTEM: Thank you for your responses. Goodbye!")
+                save_conversation_log(call_sid)
         else:
             try:
                 result = predict_intent(speech)
@@ -109,26 +164,65 @@ def gather():
                 logger.error(f"Intent prediction error: {e}")
                 resp.say("Sorry, there was an error processing your request.", voice='alice')
                 resp.hangup()
+                if call_sid:
+                    add_conversation_log(call_sid, "SYSTEM: Sorry, there was an error processing your request.")
+                    save_conversation_log(call_sid)
                 return Response(str(resp), mimetype='text/xml')
 
             if intent and confidence > 0.8:
                 resp.append(create_gather(intent))
                 flask_session['gather_start'] = time.time()
                 flask_session['last_prompt'] = intent
+                if call_sid:
+                    add_conversation_log(call_sid, f"SYSTEM: {intent}")
+                
+                # Add recording for ongoing conversation
+                resp.record(
+                    max_length=3600,
+                    play_beep=True,
+                    recording_status_callback=f"{ngrok_url}/recording-complete",
+                    recording_status_callback_method="POST",
+                    recording_status_callback_event=["completed"]
+                )
             else:
                 resp.say("I could not understand. Please try again.", voice='alice')
                 last_prompt = flask_session.get('last_prompt', questions[question_index])
                 resp.append(create_gather(last_prompt))
                 flask_session['gather_start'] = time.time()
+                if call_sid:
+                    add_conversation_log(call_sid, f"SYSTEM: {last_prompt}")
+                
+                # Add recording for ongoing conversation
+                resp.record(
+                    max_length=3600,
+                    play_beep=True,
+                    recording_status_callback=f"{ngrok_url}/recording-complete",
+                    recording_status_callback_method="POST",
+                    recording_status_callback_event=["completed"]
+                )
     else:
         if question_index == 0 and not flask_session.get('first_question_repeated', False):
             resp.say("Sorry, I did not understand. Let me repeat the question.", voice='alice')
             resp.append(create_gather(questions[question_index]))
             flask_session['gather_start'] = time.time()
             flask_session['first_question_repeated'] = True
+            if call_sid:
+                add_conversation_log(call_sid, f"SYSTEM: {questions[question_index]}")
+            
+            # Add recording for ongoing conversation
+            resp.record(
+                max_length=3600,
+                play_beep=True,
+                recording_status_callback=f"{ngrok_url}/recording-complete",
+                recording_status_callback_method="POST",
+                recording_status_callback_event=["completed"]
+            )
         else:
             resp.say("We did not receive any input. Goodbye!", voice='alice')
             resp.hangup()
+            if call_sid:
+                add_conversation_log(call_sid, "SYSTEM: We did not receive any input. Goodbye!")
+                save_conversation_log(call_sid)
 
     return Response(str(resp), mimetype='text/xml')
 
@@ -160,23 +254,7 @@ def recording_complete():
         logger.warning("No recording URL found.")
     return Response("Recording saved", status=200)
 
-@app.route("/transcription-complete", methods=["POST"])
-def transcription_complete():
-    transcription_text = request.form.get("TranscriptionText")
-    recording_sid = request.form.get("RecordingSid")
 
-    if transcription_text and recording_sid:
-        try:
-            os.makedirs("transcripts", exist_ok=True)
-            file_path = os.path.join("transcripts", f"{recording_sid}.txt")
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(transcription_text)
-            logger.info(f"Transcription saved at {file_path}")
-        except Exception as e:
-            logger.error(f"Failed to save transcription: {e}")
-    else:
-        logger.warning("Missing transcription or SID.")
-    return Response("Transcription saved", status=200)
 
 @app.route('/recordings/<filename>')
 def serve_recording(filename):
