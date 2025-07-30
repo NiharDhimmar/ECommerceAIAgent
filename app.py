@@ -13,6 +13,7 @@ load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY', 'change_this_secret')
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+HUMAN_AGENT_NUMBER = os.getenv('HUMAN_AGENT_NUMBER') 
 
 
 
@@ -43,6 +44,14 @@ questions = [
     "Where can I make an order?"
 ]
 question_index = 0
+
+# Call forwarding configuration
+CUSTOMER_SERVICE_KEYWORDS = [
+    "customer service", "customer support", "human agent", "agent", 
+    "representative", "operator", "live person", "speak to someone",
+    "talk to someone", "human", "real person", "customer care",
+    "support team", "help desk", "service desk"
+]
 
 # Load intent model
 load_saved_assets()
@@ -86,6 +95,27 @@ def add_conversation_log(call_sid, message):
     if call_sid not in conversation_logs:
         conversation_logs[call_sid] = []
     conversation_logs[call_sid].append(f"[{time.strftime('%H:%M:%S')}] {message}")
+
+def check_customer_service_request(speech):
+    """Check if the user is requesting customer service or human agent"""
+    speech_lower = speech.lower()
+    return any(keyword in speech_lower for keyword in CUSTOMER_SERVICE_KEYWORDS)
+
+def forward_to_human_agent(call_sid):
+    """Forward the call to a human agent"""
+    resp = VoiceResponse()
+    
+    # Log the forwarding action
+    if call_sid:
+        add_conversation_log(call_sid, "SYSTEM: Forwarding call to human agent")
+        save_conversation_log(call_sid)
+    
+    # Inform the user and transfer to human agent
+    resp.say("I understand you'd like to speak with a human agent. Please hold while I transfer your call.", voice='alice')
+    resp.dial(HUMAN_AGENT_NUMBER)
+    
+    logger.info(f"Call {call_sid} forwarded to human agent at {HUMAN_AGENT_NUMBER}")
+    return resp
 
 @app.route("/")
 def index():
@@ -148,6 +178,13 @@ def gather():
 
     resp = VoiceResponse()
     if speech:
+        # Check for customer service request first
+        if check_customer_service_request(speech):
+            logger.info(f"Customer service request detected: {speech}")
+            if call_sid:
+                add_conversation_log(call_sid, f"USER: {speech}")
+            return Response(str(forward_to_human_agent(call_sid)), mimetype='text/xml')
+        
         if any(word in speech for word in ["goodbye", "exit", "quit"]):
             resp.say("Thank you for your responses. Goodbye!", voice='alice')
             resp.hangup()
