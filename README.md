@@ -260,16 +260,43 @@ The system automatically forwards calls when customers mention:
 
 ```
 TwilioVoicePython/
-├── app.py                 # Main Flask application
-├── intent_core.py        # AI model loading and prediction
-├── intent_model.keras    # Trained TensorFlow model
-├── tokenizer.json        # Text tokenization data
-├── labels.json          # Intent classification labels
-├── requirements.txt     # Python dependencies
-├── recordings/         # Call recording storage
-├── transcripts/        # Conversation logs
-└── .env               # Environment configuration
+├── app.py                       # Flask app (APIs + Twilio voice webhooks)
+├── intent_core.py               # ML model loading + inference helpers
+├── intent_model.keras           # Trained model
+├── tokenizer.json               # Tokenizer for the model
+├── labels.json                  # Labels for intents
+├── recordings/                  # Saved call recordings (MP3)
+├── transcripts/                 # Saved conversation logs (TXT)
+├── requirements.txt             # Python deps
+├── .env                         # Local env vars (not in repo)
+├── admin-dashboard/             # React admin app
+│   ├── public/                  # Static assets (manifest, favicon, index.html)
+│   ├── src/
+│   │   ├── pages/               # Route-level pages (Dashboard, Calls, Numbers, ...)
+│   │   ├── components/          # Reusable UI (Sidebar, etc.)
+│   │   ├── App.js               # Router + layout
+│   │   ├── index.js             # React bootstrap
+│   │   └── setupProxy.js        # Dev proxy to Flask (only in dev)
+│   ├── package.json             # Frontend deps + scripts
+│   └── tailwind.config.js       # UI styling
+└── web.config                   # IIS hosting (optional)
 ```
+
+### Key backend routes
+
+- Twilio webhooks: `/voice`, `/gather`, `/recording-complete`
+- Static: `/recordings/<file>`, `/transcripts/<file>`
+- Admin APIs:
+  - `/api/dashboard/stats`, `/api/calls`, `/api/recordings`, `/api/transcripts`, `/api/analytics`
+  - `/api/settings` (GET/POST)
+  - Numbers: `/api/twilio/available-numbers`, `/api/twilio/purchase-number`, `/api/twilio/my-numbers`, `/api/twilio/numbers/<sid>` (DELETE), `/api/twilio/numbers/<sid>/voice-url` (POST)
+
+### Environment variables
+
+- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` — required
+- `NGROK_URL` — optional; defaults Voice URL to `NGROK_URL/voice` on purchase if provided
+- `HUMAN_AGENT_NUMBER` — for call forwarding
+- `SECRET_KEY` — Flask session secret
 
 ## 🔧 Configuration Options
 
