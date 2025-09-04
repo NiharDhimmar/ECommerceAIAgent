@@ -1235,6 +1235,10 @@ def gather():
                 add_conversation_log(call_sid, "USER: [No speech detected]")
 
         resp = VoiceResponse()
+        # Initialize intent and confidence variables at the beginning
+        intent = None
+        confidence = 0.0
+        
         if speech:
             # Check for customer service request first
             if check_customer_service_request(speech):
@@ -1250,9 +1254,6 @@ def gather():
                     add_conversation_log(call_sid, "SYSTEM: Thank you for your responses. Goodbye!")
                     save_conversation_log(call_sid)
             else:
-                # Initialize intent and confidence variables
-                intent = None
-                confidence = 0.0
                 try:
                     result = predict_intent(speech)
                     intent = result.get("intent")
