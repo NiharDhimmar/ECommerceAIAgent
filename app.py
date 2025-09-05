@@ -1235,7 +1235,7 @@ def gather():
                 add_conversation_log(call_sid, "USER: [No speech detected]")
 
         resp = VoiceResponse()
-        # Initialize intent and confidence variables at the beginning
+        # Initialize intent and confidence variables at the start
         intent = None
         confidence = 0.0
         
