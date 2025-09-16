@@ -9,6 +9,7 @@ from collections import Counter
 from flask import Flask, request, Response, session as flask_session, send_from_directory, jsonify
 from flask_cors import CORS
 from twilio.twiml.voice_response import VoiceResponse, Gather
+from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 from dotenv import load_dotenv
 from intent_core import load_saved_assets, predict_intent, analyze_conversation_intent
@@ -327,6 +328,9 @@ app.config['SESSION_COOKIE_SECURE'] = True
 
 # Conversation logging
 conversation_logs = {}
+whatsapp_handoffs = {}
+whatsapp_session_call_sid = {}
+whatsapp_session_state = {}
 
 # Sample questions
 questions = [
@@ -442,6 +446,13 @@ def check_customer_service_request(speech):
     speech_lower = speech.lower()
     return any(keyword in speech_lower for keyword in CUSTOMER_SERVICE_KEYWORDS)
 
+def format_wa(number: str) -> str:
+    try:
+        n = number or ""
+        return n if n.startswith("whatsapp:") else f"whatsapp:{n}"
+    except Exception:
+        return number
+
 def forward_to_human_agent(call_sid):
     """Forward the call to a human agent"""
     resp = VoiceResponse()
@@ -464,6 +475,190 @@ def get_twilio_client():
     if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
         raise RuntimeError("Twilio credentials are not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in your environment.")
     return Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+# ========= WhatsApp Integration =========
+
+@app.route("/whatsapp/incoming", methods=["POST"])
+def whatsapp_incoming():
+    try:
+        from_number = request.values.get("From") or ""
+        to_number = request.values.get("To") or ""
+        body = (request.values.get("Body") or "").strip()
+        wa_from = from_number.replace("whatsapp:", "")
+
+        resp = MessagingResponse()
+
+        # Log incoming WhatsApp message to terminal
+        try:
+            logger.info(f"WA INCOMING from {wa_from} -> '{body}'")
+        except Exception:
+            pass
+
+        if not body:
+            resp.message("I didn't receive any text. Please type your message.")
+            return Response(str(resp), mimetype='text/xml')
+
+        # Detect customer service escalations first
+        if check_customer_service_request(body):
+            # Store handoff flag for this user so future messages are just relayed
+            whatsapp_handoffs[wa_from] = True
+            human_number = os.getenv('WHATSAPP_HUMAN_AGENT') or HUMAN_AGENT_NUMBER or ''
+            if human_number:
+                # Notify user and agent
+                resp.message("I will connect you with a human agent here. Please wait.")
+                try:
+                    client = get_twilio_client()
+                    client.messages.create(
+                        to=format_wa(human_number),
+                        from_=to_number if to_number.startswith('whatsapp:') else format_wa(os.getenv('TWILIO_WHATSAPP_FROM', '')),
+                        body=f"New WhatsApp support request from {wa_from}: '{body}'"
+                    )
+                except Exception as send_err:
+                    logger.error(f"Failed to notify human agent on WhatsApp: {send_err}")
+            else:
+                resp.message("No human agent configured. Please try again later.")
+            return Response(str(resp), mimetype='text/xml')
+
+        # If user is already in handoff mode, relay their messages to the agent
+        if whatsapp_handoffs.get(wa_from):
+            human_number = os.getenv('WHATSAPP_HUMAN_AGENT') or HUMAN_AGENT_NUMBER or ''
+            if human_number:
+                try:
+                    client = get_twilio_client()
+                    client.messages.create(
+                        to=format_wa(human_number),
+                        from_=to_number if to_number.startswith('whatsapp:') else format_wa(os.getenv('TWILIO_WHATSAPP_FROM', '')),
+                        body=f"User {wa_from}: {body}"
+                    )
+                    resp.message("Message sent to human agent.")
+                except Exception as relay_err:
+                    logger.error(f"Failed to relay message to agent: {relay_err}")
+                    resp.message("Failed to send to agent. Please try again.")
+            else:
+                resp.message("No human agent configured.")
+            return Response(str(resp), mimetype='text/xml')
+
+        # Initialize session state if needed
+        state = whatsapp_session_state.get(wa_from) or {}
+
+        # End conditions
+        if any(w in body.lower() for w in ["goodbye", "exit", "quit"]):
+            reply = "Thank you for your responses. Goodbye!"
+            # Persist and clear session
+            call_sid = state.get('call_sid') or whatsapp_session_call_sid.get(wa_from)
+            if call_sid:
+                add_conversation_log(call_sid, "SYSTEM: Thank you for your responses. Goodbye!")
+                try:
+                    save_conversation_log(call_sid)
+                except Exception:
+                    pass
+            whatsapp_session_state.pop(wa_from, None)
+            whatsapp_session_call_sid.pop(wa_from, None)
+            resp.message(reply)
+            return Response(str(resp), mimetype='text/xml')
+
+        # Run intent detection and craft reply similar to voice flow
+        try:
+            result = predict_intent(body)
+            intent = result.get("intent")
+            confidence = float(result.get("confidence") or 0)
+            # Log predicted intent to terminal
+            try:
+                logger.info(f"WA INTENT for {wa_from}: {intent} (confidence={confidence:.2f})")
+            except Exception:
+                pass
+            if intent and confidence > 0.8:
+                reply = intent
+                state['last_prompt'] = intent
+            else:
+                last_prompt = state.get('last_prompt') or questions[0]
+                reply = f"I could not understand. Please try again.\n\n{last_prompt}"
+        except Exception as e:
+            logger.error(f"WhatsApp intent error: {e}")
+            reply = "Sorry, there was an error processing your message."
+
+        # Persist lightweight transcript-like log per WhatsApp user
+        call_sid = (state.get('call_sid')
+                    or whatsapp_session_call_sid.get(wa_from))
+        if not call_sid:
+            call_sid = f"WA{uuid.uuid4().hex[:24]}"
+            whatsapp_session_call_sid[wa_from] = call_sid
+            state['call_sid'] = call_sid
+            add_conversation_log(call_sid, f"SYSTEM: WhatsApp session started with {wa_from}")
+        add_conversation_log(call_sid, f"USER: {body}")
+        add_conversation_log(call_sid, f"SYSTEM: {reply}")
+        # Save periodically to file/db
+        if len(conversation_logs.get(call_sid, [])) % 6 == 0:
+            try:
+                save_conversation_log(call_sid)
+            except Exception:
+                pass
+        whatsapp_session_state[wa_from] = state
+
+        resp.message(reply)
+        return Response(str(resp), mimetype='text/xml')
+    except Exception as e:
+        logger.error(f"Error in WhatsApp incoming route: {e}")
+        resp = MessagingResponse()
+        resp.message("An error occurred. Please try again later.")
+        return Response(str(resp), mimetype='text/xml')
+
+
+@app.route("/api/whatsapp/send", methods=["POST"])
+def api_whatsapp_send():
+    try:
+        data = request.get_json(force=True) or {}
+        to_number = data.get('to') or ''
+        body = data.get('body') or ''
+        from_number = os.getenv('TWILIO_WHATSAPP_FROM', '')
+        if not to_number or not body or not from_number:
+            return jsonify({"error": "to, body, and TWILIO_WHATSAPP_FROM are required"}), 400
+        client = get_twilio_client()
+        msg = client.messages.create(
+            to=format_wa(to_number),
+            from_=format_wa(from_number),
+            body=body
+        )
+        return jsonify({"sid": msg.sid, "status": msg.status})
+    except Exception as e:
+        logger.error(f"Failed to send WhatsApp message: {e}")
+        return jsonify({"error": "Failed to send message", "details": str(e)}), 500
+
+
+@app.route("/api/whatsapp/start", methods=["POST"])
+def api_whatsapp_start():
+    """Start a WhatsApp conversation with the same first question used for calls."""
+    try:
+        data = request.get_json(force=True) or {}
+        to_number = data.get('to') or ''
+        first_question = questions[0]
+        from_number = os.getenv('TWILIO_WHATSAPP_FROM', '')
+        if not to_number or not from_number:
+            return jsonify({"error": "to and TWILIO_WHATSAPP_FROM are required"}), 400
+
+        client = get_twilio_client()
+        wa_to = to_number
+        msg = client.messages.create(
+            to=format_wa(wa_to),
+            from_=format_wa(from_number),
+            body=first_question
+        )
+
+        # Initialize session state for recipient
+        wa_key = to_number
+        state = {
+            'call_sid': f"WA{uuid.uuid4().hex[:24]}",
+            'last_prompt': first_question,
+            'first_question_repeated': False
+        }
+        whatsapp_session_call_sid[wa_key] = state['call_sid']
+        whatsapp_session_state[wa_key] = state
+        add_conversation_log(state['call_sid'], f"SYSTEM: Initial greeting and first question: '{first_question}'")
+
+        return jsonify({"sid": msg.sid, "status": msg.status, "call_sid": state['call_sid']})
+    except Exception as e:
+        logger.error(f"Failed to start WhatsApp conversation: {e}")
+        return jsonify({"error": "Failed to start conversation", "details": str(e)}), 500
 
 @app.route("/")
 def index():
