@@ -8,7 +8,7 @@ import {
   Bot,
   X
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 import toast from 'react-hot-toast';
 
 const Transcripts = () => {
@@ -26,8 +26,7 @@ const Transcripts = () => {
   const fetchTranscripts = async () => {
     try {
       setLoading(true);
-      const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5000';
-      const { data } = await axios.get(`${API_BASE}/api/transcripts`);
+      const { data } = await api.get(`/api/transcripts`);
       setTranscripts(data || []);
     } catch (error) {
       toast.error('Failed to load transcripts');
@@ -68,12 +67,13 @@ const Transcripts = () => {
     toast.success('Transcript downloaded');
   };
 
-  // Removed confidence display
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading transcripts...</p>
+        </div>
       </div>
     );
   }

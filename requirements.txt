@@ -2,3 +2,7 @@ Flask>=2.2
 python-dotenv
 twilio
 tensorflow
+psycopg2-binary
+bcrypt
+itsdangerous
+email-validator

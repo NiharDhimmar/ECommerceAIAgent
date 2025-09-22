@@ -1,18 +1,18 @@
-# AgentAI Operations Dashboard
+# AgentAI Client Dashboard
 
-A modern React.js admin dashboard for managing and monitoring the AgentAI Operations system.
+A modern React.js client portal for managing and monitoring AI assistant interactions.
 
 ## 🚀 Features
 
-### 📊 Dashboard Overview
-- **Real-time Statistics**: View total calls, recordings, transcripts, and success rates
-- **Interactive Charts**: Call volume trends, intent distribution, and confidence metrics
-- **Recent Activity**: Latest calls with quick access to details
-- **Performance Metrics**: Average call duration, success rates, and system health
+### 📊 Client Dashboard
+- **Personal Statistics**: View your call history, recordings, and transcripts
+- **Recent Activity**: Quick overview of your latest AI interactions
+- **Success Metrics**: Track your AI assistant performance
+- **Quick Stats**: Average call duration, success rates, and active sessions
 
 ### 📞 Call Management
-- **Call History**: Complete list of all voice calls with filtering and search
-- **Call Details**: View detailed information including transcripts and recordings
+- **Call History**: Complete list of your voice calls with filtering and search
+- **Call Details**: View detailed information including duration and status
 - **Status Tracking**: Monitor call status (completed, failed, in-progress)
 - **Intent Analysis**: See AI confidence scores and detected intents
 
@@ -28,24 +28,17 @@ A modern React.js admin dashboard for managing and monitoring the AgentAI Operat
 - **Export Functionality**: Download transcripts as text files
 - **Search & Filter**: Find transcripts by various criteria
 
-### 📈 Analytics & Insights
-- **Performance Charts**: Call volume trends, confidence trends, hourly distribution
-- **Intent Analysis**: Distribution of customer intents and success rates
-- **Time-based Metrics**: Filter analytics by different time periods
-- **Top Intents Table**: Performance metrics for each intent category
-
-### ⚙️ System Settings
-- **Twilio Configuration**: Manage account credentials and phone numbers
-- **AI Settings**: Configure confidence thresholds and response times
-- **System Preferences**: Call forwarding, recording settings, analytics
-- **Security Settings**: HTTPS, session timeouts, audit logging
+### 👤 Profile Management
+- **Account Information**: Update username and email
+- **Password Management**: Secure password change with current password verification
+- **Account Details**: View member since date and last login information
+- **Security Settings**: Change password with modal interface
 
 ## 🛠️ Technical Stack
 
 - **React 18**: Modern React with hooks and functional components
 - **React Router**: Client-side routing for SPA navigation
 - **Tailwind CSS**: Utility-first CSS framework for styling
-- **Recharts**: Beautiful and responsive charts
 - **Lucide React**: Modern icon library
 - **Axios**: HTTP client for API calls
 - **React Hot Toast**: Toast notifications
@@ -59,9 +52,9 @@ A modern React.js admin dashboard for managing and monitoring the AgentAI Operat
 
 ### Installation
 
-1. **Navigate to the admin dashboard directory:**
+1. **Navigate to the client dashboard directory:**
    ```bash
-   cd admin-dashboard
+   cd client-dashboard
    ```
 
 2. **Install dependencies:**
@@ -75,7 +68,7 @@ A modern React.js admin dashboard for managing and monitoring the AgentAI Operat
    ```
 
 4. **Open your browser:**
-   Navigate to `http://localhost:3000`
+   Navigate to `http://localhost:4000` (or the port shown in terminal)
 
 ### Development
 
@@ -93,24 +86,31 @@ npm test
 ## 📁 Project Structure
 
 ```
-admin-dashboard/
+client-dashboard/
 ├── public/
-│   └── index.html
+│   ├── index.html
+│   └── manifest.json
 ├── src/
 │   ├── components/
-│   │   └── Sidebar.js          # Navigation sidebar
+│   │   ├── Sidebar.js          # Client navigation sidebar
+│   │   ├── Header.js           # Client header with profile dropdown
+│   │   └── PrivateRoute.js     # Authentication guard
 │   ├── pages/
-│   │   ├── Dashboard.js         # Main dashboard overview
+│   │   ├── Dashboard.js         # Client dashboard overview
 │   │   ├── Calls.js            # Call management
 │   │   ├── Recordings.js       # Recording management
 │   │   ├── Transcripts.js      # Transcript management
-│   │   ├── Analytics.js        # Analytics and charts
-│   │   └── Settings.js         # System settings
+│   │   ├── Profile.js          # Profile management
+│   │   ├── Login.js            # Client login
+│   │   ├── ForgotPassword.js   # Password reset request
+│   │   └── ResetPassword.js    # Password reset form
 │   ├── App.js                  # Main app component
 │   ├── index.js                # React entry point
-│   └── index.css               # Global styles
+│   ├── index.css               # Global styles
+│   └── api.js                  # API configuration
 ├── package.json
 ├── tailwind.config.js
+├── postcss.config.js
 └── README.md
 ```
 
@@ -128,13 +128,18 @@ The dashboard connects to your Flask backend via proxy configuration in `package
 ### API Integration
 The dashboard expects the following API endpoints from your Flask backend:
 
-- `GET /api/dashboard/stats` - Dashboard statistics
-- `GET /api/calls` - Call history
-- `GET /api/recordings` - Recording list
-- `GET /api/transcripts` - Transcript list
-- `GET /api/analytics` - Analytics data
-- `GET /api/settings` - System settings
-- `POST /api/settings` - Update settings
+- `GET /api/auth/me` - Check authentication status
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/profile` - Get user profile
+- `PUT /api/auth/profile` - Update user profile
+- `PUT /api/auth/change-password` - Change password
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password
+- `GET /api/client/dashboard` - Client dashboard stats
+- `GET /api/client/calls` - Client call history
+- `GET /api/client/recordings` - Client recordings
+- `GET /api/client/transcripts` - Client transcripts
 
 ## 🎨 UI Components
 
@@ -155,33 +160,19 @@ The dashboard expects the following API endpoints from your Flask backend:
 - **Loading States**: Spinner animations during data fetching
 - **Toast Notifications**: Success/error feedback
 - **Hover Effects**: Smooth transitions on interactive elements
-- **Modal Dialogs**: For detailed views and confirmations
-
-## 📊 Data Visualization
-
-### Charts Used
-- **Line Charts**: For time-series data (call volume, confidence trends)
-- **Area Charts**: For cumulative metrics
-- **Bar Charts**: For categorical data (hourly distribution)
-- **Pie Charts**: For distribution data (intent breakdown)
-- **Progress Bars**: For performance metrics
-
-### Real-time Updates
-- **Auto-refresh**: Dashboard stats update automatically
-- **Live Indicators**: System status and connection health
-- **WebSocket Ready**: Prepared for real-time updates
+- **Modal Dialogs**: For password changes and confirmations
 
 ## 🔒 Security Features
 
-### Authentication Ready
-- **Protected Routes**: Ready for authentication implementation
-- **Session Management**: Prepared for user sessions
-- **Role-based Access**: Structure for different user roles
+### Authentication
+- **Protected Routes**: Client-only access with authentication guard
+- **Session Management**: Secure session handling
+- **Role-based Access**: Clients cannot access admin features
 
 ### Data Protection
 - **HTTPS Only**: Secure cookie configuration
 - **Input Validation**: Form validation and sanitization
-- **CSRF Protection**: Ready for CSRF token implementation
+- **Password Security**: Secure password change with current password verification
 
 ## 🚀 Deployment
 
@@ -250,7 +241,7 @@ For issues and questions:
 
 - **Real-time Updates**: WebSocket integration for live data
 - **Advanced Analytics**: More detailed performance metrics
-- **User Management**: Multi-user support with roles
 - **Export Features**: PDF reports and data exports
 - **Mobile App**: React Native version
-- **Dark Mode**: Theme switching capability 
+- **Enhanced Security**: Two-factor authentication
+- **Custom Themes**: User-selectable color schemes

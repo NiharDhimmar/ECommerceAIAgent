@@ -2,11 +2,13 @@ import os
 import json
 import uuid
 import time
+import secrets
+import smtplib
 from datetime import datetime, timedelta
 import logging
 import requests
 from collections import Counter
-from flask import Flask, request, Response, session as flask_session, send_from_directory, jsonify
+from flask import Flask, request, Response, session as flask_session, send_from_directory, jsonify, g
 from flask_cors import CORS
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.twiml.messaging_response import MessagingResponse
@@ -18,6 +20,11 @@ from intent_core import load_saved_assets, predict_intent, analyze_conversation_
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import json
+import bcrypt
+from itsdangerous import URLSafeTimedSerializer
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import email_validator
 
 # Logging setup (moved up for DatabaseManager to use)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -34,6 +41,33 @@ class PostgreSQLManager:
         try:
             with psycopg2.connect(self.connection_string) as conn:
                 with conn.cursor() as cur:
+                    # Create users table
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS users (
+                            id SERIAL PRIMARY KEY,
+                            username VARCHAR(50) UNIQUE NOT NULL,
+                            email VARCHAR(255) UNIQUE NOT NULL,
+                            password_hash VARCHAR(255) NOT NULL,
+                            is_active BOOLEAN DEFAULT TRUE,
+                            is_admin BOOLEAN DEFAULT FALSE,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            last_login TIMESTAMP
+                        )
+                    """)
+                    
+                    # Create password reset tokens table
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                            id SERIAL PRIMARY KEY,
+                            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                            token VARCHAR(255) UNIQUE NOT NULL,
+                            expires_at TIMESTAMP NOT NULL,
+                            used BOOLEAN DEFAULT FALSE,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """)
+                    
                     # Create transcripts table
                     cur.execute("""
                         CREATE TABLE IF NOT EXISTS transcripts (
@@ -66,12 +100,228 @@ class PostgreSQLManager:
                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         )
                     """)
+
+                    # Create clients table
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS clients (
+                            id UUID PRIMARY KEY,
+                            name VARCHAR(255),
+                            phone VARCHAR(50) UNIQUE,
+                            email VARCHAR(255),
+                            company VARCHAR(255),
+                            status VARCHAR(50) DEFAULT 'lead',
+                            tags JSONB,
+                            last_contact_at TIMESTAMP,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """)
+
+                    # Create client notes table
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS client_notes (
+                            id UUID PRIMARY KEY,
+                            client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+                            body TEXT,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            created_by VARCHAR(255)
+                        )
+                    """)
+                    
+                    # Create default admin user if it doesn't exist
+                    self._create_default_admin()
                     
                     conn.commit()
                     logger.info("PostgreSQL database initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize database: {e}")
             raise
+    
+    def _create_default_admin(self):
+        """Create default admin user if no users exist"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor() as cur:
+                    # Check if any users exist
+                    cur.execute("SELECT COUNT(*) FROM users")
+                    user_count = cur.fetchone()[0]
+                    
+                    if user_count == 0:
+                        # Create default admin user
+                        admin_username = os.getenv('ADMIN_USERNAME', 'admin')
+                        admin_email = os.getenv('ADMIN_EMAIL', 'admin@voiceai.com')
+                        admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+                        
+                        # Hash the password
+                        password_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                        
+                        cur.execute("""
+                            INSERT INTO users (username, email, password_hash, is_admin, is_active)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (admin_username, admin_email, password_hash, True, True))
+                        
+                        logger.info(f"Default admin user created: {admin_username}")
+        except Exception as e:
+            logger.error(f"Failed to create default admin user: {e}")
+    
+    def authenticate_user(self, username_or_email, password):
+        """Authenticate user with username/email and password"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT id, username, email, password_hash, is_active, is_admin
+                        FROM users 
+                        WHERE (username = %s OR email = %s) AND is_active = TRUE
+                    """, (username_or_email, username_or_email))
+                    
+                    user = cur.fetchone()
+                    if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+                        # Update last login
+                        cur.execute("""
+                            UPDATE users SET last_login = CURRENT_TIMESTAMP 
+                            WHERE id = %s
+                        """, (user['id'],))
+                        conn.commit()
+                        return user
+                    return None
+        except Exception as e:
+            logger.error(f"Authentication error: {e}")
+            return None
+    
+    def get_user_by_id(self, user_id):
+        """Get user by ID"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT id, username, email, is_active, is_admin, created_at, last_login
+                        FROM users WHERE id = %s AND is_active = TRUE
+                    """, (user_id,))
+                    return cur.fetchone()
+        except Exception as e:
+            logger.error(f"Get user error: {e}")
+            return None
+    
+    def create_user(self, username, email, password, is_admin=False):
+        """Create a new user"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    # Check if username or email already exists
+                    cur.execute("""
+                        SELECT id FROM users WHERE username = %s OR email = %s
+                    """, (username, email))
+                    existing_user = cur.fetchone()
+                    
+                    if existing_user:
+                        return None  # User already exists
+                    
+                    # Hash the password
+                    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                    
+                    # Insert new user
+                    cur.execute("""
+                        INSERT INTO users (username, email, password_hash, is_admin, is_active)
+                        VALUES (%s, %s, %s, %s, %s)
+                        RETURNING id, username, email, is_admin, created_at
+                    """, (username, email, password_hash, is_admin, True))
+                    
+                    user = cur.fetchone()
+                    conn.commit()
+                    
+                    logger.info(f"New user created: {username} (admin: {is_admin})")
+                    return user
+        except Exception as e:
+            logger.error(f"Create user error: {e}")
+            return None
+    
+    def create_password_reset_token(self, email):
+        """Create password reset token for user"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    # Get user by email
+                    cur.execute("SELECT id FROM users WHERE email = %s AND is_active = TRUE", (email,))
+                    user = cur.fetchone()
+                    
+                    if not user:
+                        return None
+                    
+                    # Generate secure token
+                    token = secrets.token_urlsafe(32)
+                    expires_at = datetime.utcnow() + timedelta(hours=1)
+                    
+                    # Invalidate any existing tokens for this user
+                    cur.execute("""
+                        UPDATE password_reset_tokens 
+                        SET used = TRUE 
+                        WHERE user_id = %s AND used = FALSE
+                    """, (user['id'],))
+                    
+                    # Create new token
+                    cur.execute("""
+                        INSERT INTO password_reset_tokens (user_id, token, expires_at)
+                        VALUES (%s, %s, %s)
+                    """, (user['id'], token, expires_at))
+                    
+                    conn.commit()
+                    return token
+        except Exception as e:
+            logger.error(f"Create reset token error: {e}")
+            return None
+    
+    def validate_reset_token(self, token):
+        """Validate password reset token"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT prt.user_id, u.username, u.email
+                        FROM password_reset_tokens prt
+                        JOIN users u ON prt.user_id = u.id
+                        WHERE prt.token = %s 
+                        AND prt.expires_at > CURRENT_TIMESTAMP 
+                        AND prt.used = FALSE
+                        AND u.is_active = TRUE
+                    """, (token,))
+                    return cur.fetchone()
+        except Exception as e:
+            logger.error(f"Validate reset token error: {e}")
+            return None
+    
+    def reset_password(self, token, new_password):
+        """Reset user password using token"""
+        try:
+            with psycopg2.connect(self.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    # Validate token
+                    user_data = self.validate_reset_token(token)
+                    if not user_data:
+                        return False
+                    
+                    # Hash new password
+                    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                    
+                    # Update password
+                    cur.execute("""
+                        UPDATE users 
+                        SET password_hash = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (password_hash, user_data['user_id']))
+                    
+                    # Mark token as used
+                    cur.execute("""
+                        UPDATE password_reset_tokens 
+                        SET used = TRUE 
+                        WHERE token = %s
+                    """, (token,))
+                    
+                    conn.commit()
+                    return True
+        except Exception as e:
+            logger.error(f"Reset password error: {e}")
+            return False
     
     def _get_connection(self):
         """Get database connection"""
@@ -210,6 +460,66 @@ class PostgreSQLManager:
         except Exception as e:
             logger.error(f"Failed to get calls: {e}")
             return []
+
+    # ===== Clients helpers =====
+    def list_clients(self, search: str | None, status: str | None, limit: int, offset: int):
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    where = []
+                    params = []
+                    if search:
+                        where.append("(LOWER(name) LIKE %s OR LOWER(phone) LIKE %s OR LOWER(email) LIKE %s OR LOWER(company) LIKE %s)")
+                        like = f"%{search.lower()}%"
+                        params.extend([like, like, like, like])
+                    if status and status.lower() != 'all':
+                        where.append("LOWER(status) = %s")
+                        params.append(status.lower())
+                    where_clause = (" WHERE " + " AND ".join(where)) if where else ""
+
+                    # Compute last_contact and total_calls via transcripts
+                    sql = f"""
+                        SELECT c.id, c.name, c.phone, c.email, c.company, c.status, c.tags,
+                               c.created_at, c.updated_at,
+                               GREATEST(
+                                   COALESCE(c.last_contact_at, to_timestamp(0)),
+                                   COALESCE((SELECT MAX(t.created_at) FROM transcripts t WHERE t.from_number = c.phone OR t.to_number = c.phone), to_timestamp(0))
+                               ) AS last_contact_at,
+                               COALESCE((SELECT COUNT(1) FROM transcripts t WHERE t.from_number = c.phone OR t.to_number = c.phone), 0) AS total_calls
+                        FROM clients c
+                        {where_clause}
+                        ORDER BY last_contact_at DESC NULLS LAST, created_at DESC
+                        LIMIT %s OFFSET %s
+                    """
+                    params.extend([limit, offset])
+                    cur.execute(sql, params)
+                    rows = cur.fetchall()
+                    return [dict(r) for r in rows]
+        except Exception as e:
+            logger.error(f"Failed to list clients: {e}")
+            return []
+
+    def get_client(self, client_id: str):
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("SELECT * FROM clients WHERE id = %s", (client_id,))
+                    row = cur.fetchone()
+                    return dict(row) if row else None
+        except Exception as e:
+            logger.error(f"Failed to get client: {e}")
+            return None
+
+    def get_client_by_phone(self, phone: str):
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("SELECT * FROM clients WHERE phone = %s", (phone,))
+                    row = cur.fetchone()
+                    return dict(row) if row else None
+        except Exception as e:
+            logger.error(f"Failed to get client by phone: {e}")
+            return None
     
     def get_call_by_sid(self, call_sid):
         """Get specific call/transcript by call_sid"""
@@ -289,8 +599,96 @@ class PostgreSQLManager:
             logger.error(f"Failed to save call metadata: {e}")
             raise
 
+# Email service for password reset
+class EmailService:
+    def __init__(self):
+        self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+        self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
+        self.smtp_username = os.getenv('SMTP_USERNAME', '')
+        self.smtp_password = os.getenv('SMTP_PASSWORD', '')
+        self.from_email = os.getenv('FROM_EMAIL', 'noreply@voiceai.com')
+        self.app_url = os.getenv('APP_URL', 'http://localhost:3000')
+    
+    def send_password_reset_email(self, email, username, reset_token):
+        """Send password reset email"""
+        try:
+            if not self.smtp_username or not self.smtp_password:
+                logger.warning("SMTP credentials not configured, skipping email send")
+                return True
+            
+            reset_url = f"{self.app_url}/reset-password/{reset_token}"
+            
+            msg = MIMEMultipart()
+            msg['From'] = self.from_email
+            msg['To'] = email
+            msg['Subject'] = "VoiceAI - Password Reset Request"
+            
+            html_body = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background-color: #3B82F6; color: white; padding: 20px; text-align: center;">
+                        <h1>VoiceAI</h1>
+                    </div>
+                    <div style="padding: 30px;">
+                        <h2>Password Reset Request</h2>
+                        <p>Hello {username},</p>
+                        <p>You have requested to reset your password for your VoiceAI account.</p>
+                        <p>Click the button below to reset your password:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{reset_url}" 
+                               style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                                Reset Password
+                            </a>
+                        </div>
+                        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                        <p style="word-break: break-all; color: #666;">{reset_url}</p>
+                        <p><strong>This link will expire in 1 hour for security reasons.</strong></p>
+                        <p>If you didn't request this password reset, please ignore this email.</p>
+                        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                        <p style="color: #666; font-size: 12px;">
+                            This email was sent from VoiceAI. If you have any questions, please contact support.
+                        </p>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            msg.attach(MIMEText(html_body, 'html'))
+            
+            # Try different SMTP configurations
+            try:
+                # First try with STARTTLS (Gmail, Outlook)
+                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                    server.starttls()
+                    server.login(self.smtp_username, self.smtp_password)
+                    server.send_message(msg)
+            except smtplib.SMTPNotSupportedError:
+                # If STARTTLS not supported, try SSL (some servers)
+                try:
+                    with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port) as server:
+                        server.login(self.smtp_username, self.smtp_password)
+                        server.send_message(msg)
+                except Exception as ssl_error:
+                    logger.error(f"SSL connection failed: {ssl_error}")
+                    # Try without encryption (not recommended but for testing)
+                    try:
+                        with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                            server.login(self.smtp_username, self.smtp_password)
+                            server.send_message(msg)
+                    except Exception as no_ssl_error:
+                        logger.error(f"No SSL connection failed: {no_ssl_error}")
+                        raise no_ssl_error
+            
+            logger.info(f"Password reset email sent to {email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send password reset email: {e}")
+            return False
+
 # Initialize database manager
 try:
+    email_service = EmailService()
     DatabaseManager = PostgreSQLManager()
     logger.info("PostgreSQL database manager initialized successfully")
 except Exception as e:
@@ -315,16 +713,747 @@ app = Flask(__name__)
 try:
     # Allow local dashboard to call API and static assets directly if proxy is unavailable
     # More flexible CORS for development - allows any local network access
-    CORS(app, resources={
-        r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.10.137:3000"]},
-        r"/recordings/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.10.137:3000"]},
-        r"/transcripts/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.10.137:3000"]},
+    CORS(app, supports_credentials=True, resources={
+        r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.10.137:3000", "http://localhost:4000", "http://127.0.0.1:4000", "http://192.168.10.137:4000"]},
+        r"/recordings/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.10.137:3000", "http://localhost:4000", "http://127.0.0.1:4000", "http://192.168.10.137:4000"]},
+        r"/transcripts/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.10.137:3000", "http://localhost:4000", "http://127.0.0.1:4000", "http://192.168.10.137:4000"]},
     })
 except Exception:
     pass
 app.secret_key = SECRET_KEY
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = True
+# In local dev over HTTP, secure cookies break auth. Allow override via env.
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'false').lower() in ['1','true','yes']
+app.config['SESSION_COOKIE_SAMESITE'] = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
+# Allow session cookies to work across different ports in development
+app.config['SESSION_COOKIE_DOMAIN'] = None
+
+# ===== Simple Admin Auth (session-based) =====
+# Authentication helper functions
+def is_authenticated() -> bool:
+    try:
+        return flask_session.get('user_id') is not None
+    except:
+        return False
+
+def get_current_user():
+    """Get current authenticated user"""
+    try:
+        user_id = flask_session.get('user_id')
+        if user_id:
+            return DatabaseManager.get_user_by_id(user_id)
+        return None
+    except:
+        return None
+
+@app.before_request
+def protect_admin_api():
+    # Allow non-API routes and auth endpoints
+    path = request.path or ''
+    if not path.startswith('/api/'):
+        return None
+    # Public API endpoints
+    if path.startswith('/api/auth/'):
+        return None
+    # Preflight
+    if request.method == 'OPTIONS':
+        return None
+    # Enforce session for admin dashboard APIs
+    if not is_authenticated():
+        return jsonify({"error": "Unauthorized"}), 401
+    return None
+
+@app.route('/api/auth/login', methods=['POST'])
+def api_auth_login():
+    try:
+        data = request.get_json(force=True) or {}
+        username_or_email = (data.get('username') or '').strip()
+        password = data.get('password') or ''
+        
+        if not username_or_email or not password:
+            return jsonify({"error": "Username/email and password are required"}), 400
+        
+        # Authenticate user against database
+        user = DatabaseManager.authenticate_user(username_or_email, password)
+        
+        if user:
+            # Store user info in session
+            flask_session['user_id'] = user['id']
+            flask_session['username'] = user['username']
+            flask_session['is_admin'] = user['is_admin']
+            flask_session.permanent = True
+            app.permanent_session_lifetime = timedelta(seconds=int(os.getenv('SESSION_TIMEOUT', '3600')))
+            
+            logger.info(f"User {user['username']} logged in successfully")
+            return jsonify({
+                "ok": True, 
+                "user": {
+                    "id": user['id'],
+                    "username": user['username'],
+                    "email": user['email'],
+                    "is_admin": user['is_admin']
+                }
+            })
+        
+        return jsonify({"error": "Invalid credentials"}), 401
+        
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        return jsonify({"error": "Login failed"}), 500
+
+@app.route('/api/auth/register', methods=['POST'])
+def api_auth_register():
+    try:
+        data = request.get_json(force=True) or {}
+        username = (data.get('username') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+        password = data.get('password') or ''
+        
+        if not username or not email or not password:
+            return jsonify({"error": "Username, email, and password are required"}), 400
+        
+        if len(password) < 6:
+            return jsonify({"error": "Password must be at least 6 characters long"}), 400
+        
+        # Validate email format
+        try:
+            email_validator.validate_email(email)
+        except email_validator.EmailNotValidError:
+            return jsonify({"error": "Invalid email format"}), 400
+        
+        # Create user (client by default)
+        user = DatabaseManager.create_user(username, email, password, is_admin=False)
+        
+        if user:
+            logger.info(f"New client user registered: {username}")
+            return jsonify({
+                "ok": True,
+                "message": "User registered successfully",
+                "user": {
+                    "id": user['id'],
+                    "username": user['username'],
+                    "email": user['email'],
+                    "is_admin": user['is_admin']
+                }
+            }), 201
+        
+        return jsonify({"error": "Username or email already exists"}), 409
+        
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        return jsonify({"error": "Registration failed"}), 500
+
+@app.route('/api/auth/logout', methods=['POST'])
+def api_auth_logout():
+    try:
+        username = flask_session.get('username', 'Unknown')
+        flask_session.clear()
+        logger.info(f"User {username} logged out")
+        return jsonify({"ok": True})
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        return jsonify({"ok": True})
+
+@app.route('/api/auth/me', methods=['GET'])
+def api_auth_me():
+    try:
+        if is_authenticated():
+            user = get_current_user()
+            if user:
+                return jsonify({
+                    "authenticated": True, 
+                    "user": {
+                        "id": user['id'],
+                        "username": user['username'],
+                        "email": user['email'],
+                        "is_admin": user['is_admin']
+                    }
+                })
+        
+        return jsonify({"authenticated": False}), 401
+    except Exception as e:
+        logger.error(f"Auth check error: {e}")
+        return jsonify({"authenticated": False}), 401
+
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def api_forgot_password():
+    try:
+        data = request.get_json(force=True) or {}
+        email = (data.get('email') or '').strip().lower()
+        
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Validate email format
+        try:
+            email_validator.validate_email(email)
+        except email_validator.EmailNotValidError:
+            return jsonify({"error": "Invalid email format"}), 400
+        
+        # Create reset token
+        reset_token = DatabaseManager.create_password_reset_token(email)
+        
+        if reset_token:
+            # Get user info for email
+            with DatabaseManager._get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("SELECT username FROM users WHERE email = %s", (email,))
+                    user = cur.fetchone()
+            
+            if user:
+                # Send email (will return True even if email fails to avoid revealing user existence)
+                email_service.send_password_reset_email(email, user['username'], reset_token)
+        
+        # Always return success to prevent email enumeration
+        return jsonify({
+            "ok": True, 
+            "message": "If the email exists, password reset instructions have been sent"
+        })
+        
+    except Exception as e:
+        logger.error(f"Forgot password error: {e}")
+        return jsonify({"error": "Failed to process request"}), 500
+
+# Client-specific API endpoints
+@app.route('/api/client/dashboard', methods=['GET'])
+def api_client_dashboard():
+    """Get client dashboard statistics"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get client-specific statistics
+        stats = {
+            "totalCalls": 0,
+            "totalRecordings": 0,
+            "totalTranscripts": 0,
+            "successRate": 0,
+            "avgCallDuration": 0,
+            "recentCalls": []
+        }
+        
+        if DatabaseManager:
+            try:
+                with DatabaseManager._get_connection() as conn:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        # Get total calls for this user
+                        cur.execute("""
+                            SELECT COUNT(*) as total_calls FROM transcripts 
+                            WHERE user_id = %s
+                        """, (user['id'],))
+                        result = cur.fetchone()
+                        stats["totalCalls"] = result['total_calls'] if result else 0
+                        
+                        # Get total recordings
+                        cur.execute("""
+                            SELECT COUNT(*) as total_recordings FROM transcripts 
+                            WHERE user_id = %s AND recording_url IS NOT NULL
+                        """, (user['id'],))
+                        result = cur.fetchone()
+                        stats["totalRecordings"] = result['total_recordings'] if result else 0
+                        
+                        # Get total transcripts
+                        stats["totalTranscripts"] = stats["totalCalls"]  # Same as calls for now
+                        
+                        # Get success rate (calls with successful completion)
+                        cur.execute("""
+                            SELECT COUNT(*) as successful_calls FROM transcripts 
+                            WHERE user_id = %s AND status = 'completed'
+                        """, (user['id'],))
+                        result = cur.fetchone()
+                        successful_calls = result['successful_calls'] if result else 0
+                        
+                        if stats["totalCalls"] > 0:
+                            stats["successRate"] = round((successful_calls / stats["totalCalls"]) * 100, 1)
+                        
+                        # Get average call duration
+                        cur.execute("""
+                            SELECT AVG(EXTRACT(EPOCH FROM (end_time - start_time))/60) as avg_duration 
+                            FROM transcripts 
+                            WHERE user_id = %s AND start_time IS NOT NULL AND end_time IS NOT NULL
+                        """, (user['id'],))
+                        result = cur.fetchone()
+                        stats["avgCallDuration"] = round(result['avg_duration'], 1) if result and result['avg_duration'] else 0
+                        
+                        # Get recent calls
+                        cur.execute("""
+                            SELECT call_sid, phone_number, start_time, end_time, status, intent, confidence
+                            FROM transcripts 
+                            WHERE user_id = %s 
+                            ORDER BY start_time DESC 
+                            LIMIT 5
+                        """, (user['id'],))
+                        recent_calls = cur.fetchall()
+                        
+                        stats["recentCalls"] = []
+                        for call in recent_calls:
+                            duration = "0:00"
+                            if call['start_time'] and call['end_time']:
+                                duration_seconds = int((call['end_time'] - call['start_time']).total_seconds())
+                                minutes = duration_seconds // 60
+                                seconds = duration_seconds % 60
+                                duration = f"{minutes}:{seconds:02d}"
+                            
+                            stats["recentCalls"].append({
+                                "id": call['call_sid'],
+                                "phoneNumber": call['phone_number'] or "Unknown",
+                                "duration": duration,
+                                "status": call['status'] or "unknown",
+                                "timestamp": call['start_time'].strftime('%Y-%m-%d %H:%M') if call['start_time'] else "Unknown",
+                                "intent": call['intent'] or "Unknown",
+                                "confidence": call['confidence'] or 0
+                            })
+                        
+            except Exception as e:
+                logger.error(f"Database error in client dashboard: {e}")
+                # Return basic stats if database error
+                pass
+        
+        return jsonify({"ok": True, "stats": stats})
+        
+    except Exception as e:
+        logger.error(f"Client dashboard error: {e}")
+        return jsonify({"error": "Failed to fetch dashboard data"}), 500
+
+@app.route('/api/client/calls', methods=['GET'])
+def api_client_calls():
+    """Get client call history"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get query parameters
+        search = request.args.get('search', '')
+        status_filter = request.args.get('status', 'all')
+        page = request.args.get('page', 1, type=int)
+        page_size = request.args.get('pageSize', 25, type=int)
+        
+        calls = []
+        
+        if DatabaseManager:
+            try:
+                with DatabaseManager._get_connection() as conn:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        # Build query
+                        query = """
+                            SELECT call_sid, phone_number, start_time, end_time, status, intent, confidence
+                            FROM transcripts 
+                            WHERE user_id = %s
+                        """
+                        params = [user['id']]
+                        
+                        # Add search filter
+                        if search:
+                            query += " AND (phone_number ILIKE %s OR intent ILIKE %s)"
+                            search_param = f"%{search}%"
+                            params.extend([search_param, search_param])
+                        
+                        # Add status filter
+                        if status_filter != 'all':
+                            query += " AND status = %s"
+                            params.append(status_filter)
+                        
+                        query += " ORDER BY start_time DESC"
+                        
+                        # Add pagination
+                        offset = (page - 1) * page_size
+                        query += " LIMIT %s OFFSET %s"
+                        params.extend([page_size, offset])
+                        
+                        cur.execute(query, params)
+                        results = cur.fetchall()
+                        
+                        for call in results:
+                            duration = "0:00"
+                            if call['start_time'] and call['end_time']:
+                                duration_seconds = int((call['end_time'] - call['start_time']).total_seconds())
+                                minutes = duration_seconds // 60
+                                seconds = duration_seconds % 60
+                                duration = f"{minutes}:{seconds:02d}"
+                            
+                            calls.append({
+                                "id": call['call_sid'],
+                                "phoneNumber": call['phone_number'] or "Unknown",
+                                "duration": duration,
+                                "status": call['status'] or "unknown",
+                                "timestamp": call['start_time'].strftime('%Y-%m-%d %H:%M:%S') if call['start_time'] else "Unknown",
+                                "intent": call['intent'] or "Unknown",
+                                "confidence": call['confidence'] or 0
+                            })
+                        
+            except Exception as e:
+                logger.error(f"Database error in client calls: {e}")
+        
+        return jsonify({"ok": True, "calls": calls})
+        
+    except Exception as e:
+        logger.error(f"Client calls error: {e}")
+        return jsonify({"error": "Failed to fetch calls"}), 500
+
+@app.route('/api/client/recordings', methods=['GET'])
+def api_client_recordings():
+    """Get client recordings"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get query parameters
+        search = request.args.get('search', '')
+        
+        recordings = []
+        
+        if DatabaseManager:
+            try:
+                with DatabaseManager._get_connection() as conn:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        # Build query
+                        query = """
+                            SELECT call_sid, phone_number, start_time, end_time, status, intent, recording_url
+                            FROM transcripts 
+                            WHERE user_id = %s AND recording_url IS NOT NULL
+                        """
+                        params = [user['id']]
+                        
+                        # Add search filter
+                        if search:
+                            query += " AND (phone_number ILIKE %s OR intent ILIKE %s OR call_sid ILIKE %s)"
+                            search_param = f"%{search}%"
+                            params.extend([search_param, search_param, search_param])
+                        
+                        query += " ORDER BY start_time DESC"
+                        
+                        cur.execute(query, params)
+                        results = cur.fetchall()
+                        
+                        for recording in results:
+                            duration = "0:00"
+                            if recording['start_time'] and recording['end_time']:
+                                duration_seconds = int((recording['end_time'] - recording['start_time']).total_seconds())
+                                minutes = duration_seconds // 60
+                                seconds = duration_seconds % 60
+                                duration = f"{minutes}:{seconds:02d}"
+                            
+                            # Calculate file size (mock for now)
+                            file_size = "1.2 MB"  # In real implementation, get actual file size
+                            
+                            recordings.append({
+                                "id": recording['call_sid'],
+                                "callId": recording['call_sid'],
+                                "phoneNumber": recording['phone_number'] or "Unknown",
+                                "duration": duration,
+                                "timestamp": recording['start_time'].strftime('%Y-%m-%d %H:%M:%S') if recording['start_time'] else "Unknown",
+                                "intent": recording['intent'] or "Unknown",
+                                "fileSize": file_size,
+                                "url": recording['recording_url']
+                            })
+                        
+            except Exception as e:
+                logger.error(f"Database error in client recordings: {e}")
+        
+        return jsonify({"ok": True, "recordings": recordings})
+        
+    except Exception as e:
+        logger.error(f"Client recordings error: {e}")
+        return jsonify({"error": "Failed to fetch recordings"}), 500
+
+@app.route('/api/client/transcripts', methods=['GET'])
+def api_client_transcripts():
+    """Get client transcripts"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get query parameters
+        search = request.args.get('search', '')
+        page = request.args.get('page', 1, type=int)
+        page_size = request.args.get('pageSize', 25, type=int)
+        
+        transcripts = []
+        
+        if DatabaseManager:
+            try:
+                with DatabaseManager._get_connection() as conn:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        # Build query
+                        query = """
+                            SELECT call_sid, phone_number, start_time, end_time, status, intent, confidence, transcript_text
+                            FROM transcripts 
+                            WHERE user_id = %s
+                        """
+                        params = [user['id']]
+                        
+                        # Add search filter
+                        if search:
+                            query += " AND (phone_number ILIKE %s OR intent ILIKE %s OR transcript_text ILIKE %s)"
+                            search_param = f"%{search}%"
+                            params.extend([search_param, search_param, search_param])
+                        
+                        query += " ORDER BY start_time DESC"
+                        
+                        # Add pagination
+                        offset = (page - 1) * page_size
+                        query += " LIMIT %s OFFSET %s"
+                        params.extend([page_size, offset])
+                        
+                        cur.execute(query, params)
+                        results = cur.fetchall()
+                        
+                        for transcript in results:
+                            duration = "0:00"
+                            if transcript['start_time'] and transcript['end_time']:
+                                duration_seconds = int((transcript['end_time'] - transcript['start_time']).total_seconds())
+                                minutes = duration_seconds // 60
+                                seconds = duration_seconds % 60
+                                duration = f"{minutes}:{seconds:02d}"
+                            
+                            transcripts.append({
+                                "id": transcript['call_sid'],
+                                "callId": transcript['call_sid'],
+                                "phoneNumber": transcript['phone_number'] or "Unknown",
+                                "duration": duration,
+                                "timestamp": transcript['start_time'].strftime('%Y-%m-%d %H:%M:%S') if transcript['start_time'] else "Unknown",
+                                "intent": transcript['intent'] or "Unknown",
+                                "confidence": transcript['confidence'] or 0,
+                                "transcript": transcript['transcript_text'] or "No transcript available"
+                            })
+                        
+            except Exception as e:
+                logger.error(f"Database error in client transcripts: {e}")
+        
+        return jsonify({"ok": True, "transcripts": transcripts})
+        
+    except Exception as e:
+        logger.error(f"Client transcripts error: {e}")
+        return jsonify({"error": "Failed to fetch transcripts"}), 500
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def api_reset_password():
+    try:
+        data = request.get_json(force=True) or {}
+        token = (data.get('token') or '').strip()
+        new_password = data.get('password') or ''
+        
+        if not token or not new_password:
+            return jsonify({"error": "Token and new password are required"}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({"error": "Password must be at least 6 characters long"}), 400
+        
+        # Reset password using token
+        success = DatabaseManager.reset_password(token, new_password)
+        
+        if success:
+            logger.info("Password reset successfully")
+            return jsonify({"ok": True, "message": "Password reset successfully"})
+        
+        return jsonify({"error": "Invalid or expired reset token"}), 400
+        
+    except Exception as e:
+        logger.error(f"Reset password error: {e}")
+        return jsonify({"error": "Failed to reset password"}), 500
+
+# Debug endpoint to get reset tokens (REMOVE IN PRODUCTION!)
+@app.route('/api/debug/reset-tokens', methods=['GET'])
+def api_debug_reset_tokens():
+    """Debug endpoint to get recent reset tokens (ADMIN ONLY)"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Authentication required"}), 401
+        
+        current_user = get_current_user()
+        if not current_user or not current_user.get('is_admin'):
+            return jsonify({"error": "Admin privileges required"}), 403
+        
+        with DatabaseManager._get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT prt.token, prt.expires_at, prt.used, prt.created_at, u.username, u.email
+                    FROM password_reset_tokens prt
+                    JOIN users u ON prt.user_id = u.id
+                    ORDER BY prt.created_at DESC
+                    LIMIT 5
+                """)
+                tokens = cur.fetchall()
+                
+                tokens_list = []
+                for token in tokens:
+                    token_dict = dict(token)
+                    token_dict['expires_at'] = token['expires_at'].isoformat() if token['expires_at'] else None
+                    token_dict['created_at'] = token['created_at'].isoformat() if token['created_at'] else None
+                    tokens_list.append(token_dict)
+                
+                return jsonify({
+                    "ok": True,
+                    "tokens": tokens_list
+                })
+        
+    except Exception as e:
+        logger.error(f"Debug tokens error: {e}")
+        return jsonify({"error": "Failed to get tokens"}), 500
+
+@app.route('/api/auth/profile', methods=['GET'])
+def api_get_profile():
+    """Get current user profile"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Authentication required"}), 401
+        
+        user = get_current_user()
+        if user:
+            return jsonify({
+                "ok": True,
+                "user": {
+                    "id": user['id'],
+                    "username": user['username'],
+                    "email": user['email'],
+                    "is_admin": user['is_admin'],
+                    "created_at": user['created_at'].isoformat() if user['created_at'] else None,
+                    "last_login": user['last_login'].isoformat() if user['last_login'] else None
+                }
+            })
+        
+        return jsonify({"error": "User not found"}), 404
+        
+    except Exception as e:
+        logger.error(f"Get profile error: {e}")
+        return jsonify({"error": "Failed to get profile"}), 500
+
+@app.route('/api/auth/profile', methods=['PUT'])
+def api_update_profile():
+    """Update user profile"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Authentication required"}), 401
+        
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
+        
+        data = request.get_json(force=True) or {}
+        username = (data.get('username') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+        
+        if not username or not email:
+            return jsonify({"error": "Username and email are required"}), 400
+        
+        # Validate email format
+        try:
+            email_validator.validate_email(email)
+        except email_validator.EmailNotValidError:
+            return jsonify({"error": "Invalid email format"}), 400
+        
+        # Check if email is already taken by another user
+        with DatabaseManager._get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT id FROM users 
+                    WHERE email = %s AND id != %s AND is_active = TRUE
+                """, (email, current_user['id']))
+                
+                if cur.fetchone():
+                    return jsonify({"error": "Email is already taken"}), 400
+                
+                # Check if username is already taken by another user
+                cur.execute("""
+                    SELECT id FROM users 
+                    WHERE username = %s AND id != %s AND is_active = TRUE
+                """, (username, current_user['id']))
+                
+                if cur.fetchone():
+                    return jsonify({"error": "Username is already taken"}), 400
+                
+                # Update user profile
+                cur.execute("""
+                    UPDATE users 
+                    SET username = %s, email = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (username, email, current_user['id']))
+                
+                conn.commit()
+                
+                logger.info(f"User {current_user['username']} updated their profile")
+                return jsonify({
+                    "ok": True,
+                    "message": "Profile updated successfully"
+                })
+        
+    except Exception as e:
+        logger.error(f"Update profile error: {e}")
+        return jsonify({"error": "Failed to update profile"}), 500
+
+@app.route('/api/auth/change-password', methods=['PUT'])
+def api_change_password():
+    """Change user password"""
+    try:
+        if not is_authenticated():
+            return jsonify({"error": "Authentication required"}), 401
+        
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
+        
+        data = request.get_json(force=True) or {}
+        current_password = data.get('currentPassword') or ''
+        new_password = data.get('newPassword') or ''
+        
+        if not current_password or not new_password:
+            return jsonify({"error": "Current password and new password are required"}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({"error": "New password must be at least 6 characters long"}), 400
+        
+        # Verify current password
+        with DatabaseManager._get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT password_hash FROM users WHERE id = %s
+                """, (current_user['id'],))
+                
+                user_data = cur.fetchone()
+                if not user_data:
+                    return jsonify({"error": "User not found"}), 404
+                
+                # Check current password
+                if not bcrypt.checkpw(current_password.encode('utf-8'), user_data['password_hash'].encode('utf-8')):
+                    return jsonify({"error": "Current password is incorrect"}), 400
+                
+                # Hash new password
+                password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                
+                # Update password
+                cur.execute("""
+                    UPDATE users 
+                    SET password_hash = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (password_hash, current_user['id']))
+                
+                conn.commit()
+                
+                logger.info(f"User {current_user['username']} changed their password")
+                return jsonify({
+                    "ok": True,
+                    "message": "Password changed successfully"
+                })
+        
+    except Exception as e:
+        logger.error(f"Change password error: {e}")
+        return jsonify({"error": "Failed to change password"}), 500
 
 # Conversation logging
 conversation_logs = {}
@@ -951,6 +2080,230 @@ def api_get_recordings():
     except Exception as e:
         logger.error(f"Error getting recordings (DB): {e}")
         return jsonify({"error": "Failed to get recordings", "details": str(e)}), 500
+
+@app.route("/api/clients", methods=["GET", "POST"])
+def api_clients():
+    try:
+        if request.method == 'POST':
+            if DatabaseManager is None:
+                return jsonify({"error": "Database not configured"}), 500
+            data = request.get_json(force=True) or {}
+            client_id = str(uuid.uuid4())
+            name = data.get('name')
+            phone = data.get('phone')
+            email = data.get('email')
+            company = data.get('company')
+            status = (data.get('status') or 'lead').lower()
+            tags = data.get('tags') or []
+            try:
+                with DatabaseManager._get_connection() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            INSERT INTO clients (id, name, phone, email, company, status, tags, last_contact_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, NULL)
+                            """,
+                            (client_id, name, phone, email, company, status, json.dumps(tags))
+                        )
+                        conn.commit()
+                return jsonify({"id": client_id, "status": "created"}), 201
+            except Exception as e:
+                logger.error(f"Failed to create client: {e}")
+                return jsonify({"error": "Failed to create client", "details": str(e)}), 500
+
+        # GET
+        search = request.args.get('search')
+        status = request.args.get('status')
+        page = request.args.get('page', 1, type=int)
+        page_size = request.args.get('pageSize', 25, type=int)
+        limit = max(1, min(page_size, 100))
+        offset = max(0, (page - 1) * limit)
+
+        if DatabaseManager is None:
+            return jsonify({"items": [], "total": 0})
+        items = DatabaseManager.list_clients(search=search, status=status, limit=limit, offset=offset) or []
+        # For now, total is approximate as count not implemented; return filtered length
+        return jsonify({"items": items, "total": len(items)})
+    except Exception as e:
+        logger.error(f"Error in /api/clients: {e}")
+        return jsonify({"error": "Failed to process request", "details": str(e)}), 500
+
+@app.route("/api/clients/<client_id>", methods=["GET", "PUT", "DELETE"])
+def api_client_detail(client_id):
+    try:
+        if DatabaseManager is None:
+            return jsonify({"error": "Database not configured"}), 500
+
+        if request.method == 'GET':
+            client = DatabaseManager.get_client(client_id)
+            if not client:
+                return jsonify({"error": "Client not found"}), 404
+            return jsonify(client)
+
+        if request.method == 'PUT':
+            data = request.get_json(force=True) or {}
+            fields = []
+            params = []
+            for key in ['name', 'phone', 'email', 'company', 'status']:
+                if key in data:
+                    fields.append(f"{key} = %s")
+                    params.append(data.get(key))
+            if 'tags' in data:
+                fields.append("tags = %s")
+                params.append(json.dumps(data.get('tags')))
+            if not fields:
+                return jsonify({"message": "No changes"})
+            params.append(client_id)
+            with DatabaseManager._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(f"UPDATE clients SET {', '.join(fields)}, updated_at = CURRENT_TIMESTAMP WHERE id = %s", params)
+                    conn.commit()
+            return jsonify({"id": client_id, "status": "updated"})
+
+        # DELETE
+        with DatabaseManager._get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+                conn.commit()
+        return jsonify({"id": client_id, "status": "deleted"})
+    except Exception as e:
+        logger.error(f"Error in /api/clients/<id>: {e}")
+        return jsonify({"error": "Failed to process request", "details": str(e)}), 500
+
+@app.route("/api/clients/<client_id>/calls", methods=["GET"])
+def api_client_calls_by_id(client_id):
+    try:
+      if DatabaseManager is None:
+          return jsonify([])
+      # Get client phone
+      client = DatabaseManager.get_client(client_id)
+      if not client:
+          return jsonify([])
+      phone = client.get('phone') or ''
+      limit = request.args.get('limit', 50, type=int)
+      offset = request.args.get('offset', 0, type=int)
+      # Query calls where from/to equals client phone
+      with DatabaseManager._get_connection() as conn:
+          with conn.cursor(cursor_factory=RealDictCursor) as cur:
+              cur.execute(
+                  """
+                  SELECT t.call_sid as id, t.from_number, t.to_number, t.created_at as start_time,
+                         r.duration, r.recording_sid,
+                         CASE WHEN t.conversation_log IS NULL THEN 'failed'
+                              WHEN r.recording_sid IS NULL THEN 'in-progress'
+                              ELSE 'completed' END as status
+                  FROM transcripts t
+                  LEFT JOIN recordings r ON r.call_sid = t.call_sid
+                  WHERE t.from_number = %s OR t.to_number = %s
+                  ORDER BY t.created_at DESC
+                  LIMIT %s OFFSET %s
+                  """,
+                  (phone, phone, limit, offset)
+              )
+              rows = cur.fetchall() or []
+              data = []
+              for row in rows:
+                  duration = row.get('duration')
+                  data.append({
+                      "id": row.get('id'),
+                      "fromNumber": row.get('from_number') or '',
+                      "toNumber": row.get('to_number') or '',
+                      "duration": _format_duration(duration),
+                      "status": row.get('status'),
+                      "startTime": _to_iso(row.get('start_time')),
+                      "endTime": '',
+                  })
+              return jsonify(data)
+    except Exception as e:
+        logger.error(f"Error in /api/clients/<id>/calls: {e}")
+        return jsonify({"error": "Failed to get client calls", "details": str(e)}), 500
+
+@app.route("/api/clients/<client_id>/recordings", methods=["GET"])
+def api_client_recordings_by_id(client_id):
+    try:
+        if DatabaseManager is None:
+            return jsonify([])
+        client = DatabaseManager.get_client(client_id)
+        if not client:
+            return jsonify([])
+        phone = client.get('phone') or ''
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        with DatabaseManager._get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    """
+                    SELECT r.recording_sid as id, r.call_sid, r.created_at, r.duration, r.file_size,
+                           r.from_number, r.to_number
+                    FROM recordings r
+                    WHERE r.from_number = %s OR r.to_number = %s
+                    ORDER BY r.created_at DESC
+                    LIMIT %s OFFSET %s
+                    """,
+                    (phone, phone, limit, offset)
+                )
+                rows = cur.fetchall() or []
+                data = []
+                for r in rows:
+                    data.append({
+                        "id": r.get('id'),
+                        "callId": r.get('call_sid'),
+                        "timestamp": _to_iso(r.get('created_at')),
+                        "duration": _format_duration(r.get('duration')),
+                        "size": _format_size(r.get('file_size')),
+                        "fromNumber": r.get('from_number') or '',
+                        "toNumber": r.get('to_number') or '',
+                    })
+                return jsonify(data)
+    except Exception as e:
+        logger.error(f"Error in /api/clients/<id>/recordings: {e}")
+        return jsonify({"error": "Failed to get client recordings", "details": str(e)}), 500
+
+@app.route("/api/clients/<client_id>/transcripts", methods=["GET"])
+def api_client_transcripts_by_id(client_id):
+    try:
+        if DatabaseManager is None:
+            return jsonify([])
+        client = DatabaseManager.get_client(client_id)
+        if not client:
+            return jsonify([])
+        phone = client.get('phone') or ''
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        with DatabaseManager._get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    """
+                    SELECT t.call_sid as id, t.created_at, t.from_number, t.to_number, t.conversation_log
+                    FROM transcripts t
+                    WHERE t.from_number = %s OR t.to_number = %s
+                    ORDER BY t.created_at DESC
+                    LIMIT %s OFFSET %s
+                    """,
+                    (phone, phone, limit, offset)
+                )
+                rows = cur.fetchall() or []
+                data = []
+                for t in rows:
+                    # Build simple conversation count
+                    count = 0
+                    try:
+                        text = t.get('conversation_log') or ''
+                        count = sum(1 for line in text.splitlines() if line.strip())
+                    except Exception:
+                        count = 0
+                    data.append({
+                        "id": t.get('id'),
+                        "callId": t.get('id'),
+                        "timestamp": _to_iso(t.get('created_at')),
+                        "fromNumber": t.get('from_number') or '',
+                        "toNumber": t.get('to_number') or '',
+                        "messages": count,
+                    })
+                return jsonify(data)
+    except Exception as e:
+        logger.error(f"Error in /api/clients/<id>/transcripts: {e}")
+        return jsonify({"error": "Failed to get client transcripts", "details": str(e)}), 500
 
 @app.route("/api/transcripts", methods=["GET"])
 def api_get_transcripts():

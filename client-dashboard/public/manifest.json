@@ -1,6 +1,6 @@
 {
-  "short_name": "AgentAI",
-  "name": "AgentAI Operations Dashboard",
+  "short_name": "AgentAI Client",
+  "name": "AgentAI Client Dashboard",
   "icons": [
     {
       "src": "favicon.ico",
@@ -13,4 +13,3 @@
   "theme_color": "#111827",
   "background_color": "#ffffff"
 }
-

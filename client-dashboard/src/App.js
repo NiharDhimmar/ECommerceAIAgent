@@ -7,11 +7,6 @@ import Dashboard from './pages/Dashboard';
 import Calls from './pages/Calls';
 import Recordings from './pages/Recordings';
 import Transcripts from './pages/Transcripts';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
-import Numbers from './pages/Numbers';
-import Clients from './pages/Clients';
-import ClientDetail from './pages/ClientDetail';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
@@ -39,14 +34,9 @@ function App() {
                         <Routes>
                           <Route path="/" element={<Dashboard />} />
                           <Route path="/profile" element={<Profile />} />
-                          <Route path="/clients" element={<Clients />} />
-                          <Route path="/clients/:id" element={<ClientDetail />} />
                           <Route path="/calls" element={<Calls />} />
                           <Route path="/recordings" element={<Recordings />} />
                           <Route path="/transcripts" element={<Transcripts />} />
-                          <Route path="/analytics" element={<Analytics />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="/numbers" element={<Numbers />} />
                           <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                       </div>
@@ -63,4 +53,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

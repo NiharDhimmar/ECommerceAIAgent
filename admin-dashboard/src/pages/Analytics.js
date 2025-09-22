@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart3, 
   TrendingUp, 
   Users, 
   Clock,
   MessageSquare,
   Activity,
-  Target,
-  AlertCircle
+  Target
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -25,7 +23,6 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Analytics = () => {
@@ -128,8 +125,11 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading analytics...</p>
+        </div>
       </div>
     );
   }

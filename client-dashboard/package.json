@@ -1,7 +1,7 @@
 {
-  "name": "twilio-voice-admin-dashboard",
+  "name": "agentai-client-dashboard",
   "version": "1.0.0",
-  "description": "AgentAI Operations Dashboard - Comprehensive AI Assistant Management",
+  "description": "AgentAI Client Dashboard - Client Portal for AI Assistant Management",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
@@ -23,7 +23,7 @@
     "http-proxy-middleware": "^2.0.6"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "set PORT=4000 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -46,4 +46,4 @@
       "last 1 safari version"
     ]
   }
-} 
+}

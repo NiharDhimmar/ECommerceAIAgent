@@ -4,9 +4,10 @@ import {
   Filter, 
   Clock,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Phone
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 import toast from 'react-hot-toast';
 
 const Calls = () => {
@@ -15,7 +16,7 @@ const Calls = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize] = useState(10);
 
   useEffect(() => {
     fetchCalls();
@@ -24,8 +25,7 @@ const Calls = () => {
   const fetchCalls = async () => {
     try {
       setLoading(true);
-      const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5000';
-      const { data } = await axios.get(`${API_BASE}/api/calls`);
+      const { data } = await api.get(`/api/calls`);
       setCalls(data || []);
     } catch (error) {
       toast.error('Failed to load calls');
@@ -67,15 +67,13 @@ const Calls = () => {
     setCurrentPage(page);
   };
 
-  const handlePageSizeChange = (size) => {
-    setPageSize(size);
-    setCurrentPage(1);
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading calls...</p>
+        </div>
       </div>
     );
   }
@@ -87,8 +85,8 @@ const Calls = () => {
         <p className="text-gray-600 mt-2">Manage and monitor all voice calls</p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 md:p-6 mb-6">
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -121,144 +119,85 @@ const Calls = () => {
       </div>
 
       {/* Calls Table */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Call History ({filteredCalls.length} calls)
-            </h3>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500">Show:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="px-2 py-1 border border-gray-300 rounded text-sm"
-              >
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <div className="max-h-[70vh] overflow-auto rounded-t-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
-              <tr>
-                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Call ID
-                </th>
-                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  From
-                </th>
-                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  To
-                </th>
-                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
-                </th>
-                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" className="hidden md:table-cell px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Start Time
-                </th>
-                <th scope="col" className="hidden md:table-cell px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  End Time
-                </th>
-                <th scope="col" className="md:hidden px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Time
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.map((call) => (
-                <tr key={call.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <div className="truncate max-w-[120px] md:max-w-none" title={call.id}>
-                      {call.id}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="truncate max-w-[100px] md:max-w-none" title={call.fromNumber || ''}>
-                      {call.fromNumber || ''}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="truncate max-w-[100px] md:max-w-none" title={call.toNumber || ''}>
-                      {call.toNumber || ''}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1 text-gray-400 flex-shrink-0" />
-                      <span className="truncate">{call.duration}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(call.status)}`}>
-                      {call.status}
-                    </span>
-                  </td>
-                  <td className="hidden md:table-cell px-3 py-4 text-sm text-gray-500">
-                    <div className="truncate max-w-[140px]" title={call.startTime}>
-                      {call.startTime}
-                    </div>
-                  </td>
-                  <td className="hidden md:table-cell px-3 py-4 text-sm text-gray-500">
-                    <div className="truncate max-w-[140px]" title={call.endTime}>
-                      {call.endTime}
-                    </div>
-                  </td>
-                  <td className="md:hidden px-3 py-4 text-sm text-gray-500">
-                    <div className="space-y-1">
-                      <div className="text-xs text-gray-400">Start:</div>
-                      <div className="truncate max-w-[120px]" title={call.startTime}>
-                        {call.startTime}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-1">End:</div>
-                      <div className="truncate max-w-[120px]" title={call.endTime}>
-                        {call.endTime}
-                      </div>
-                    </div>
-                  </td>
+      {filteredCalls.length > 0 && (
+        <div className="bg-white rounded-lg shadow">
+          <div className="max-h-[70vh] overflow-auto rounded-t-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Call ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {currentItems.map((call) => (
+                  <tr key={call.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900 break-all">{call.id}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{call.fromNumber || ''}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{call.toNumber || ''}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1 text-gray-400 flex-shrink-0" />
+                        <span>{call.duration}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(call.status)}`}>
+                        {call.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{call.startTime}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{call.endTime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 md:px-6 py-4 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-gray-500 text-center sm:text-left">
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredCalls.length)} of {filteredCalls.length} calls
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <span className="text-sm text-gray-500 px-2">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-500 text-center sm:text-left">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredCalls.length)} of {filteredCalls.length} calls
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="text-sm text-gray-500 px-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
+
+      {filteredCalls.length === 0 && (
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <Phone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No calls found</h3>
+          <p className="text-gray-500">No calls match your current search criteria.</p>
+        </div>
+      )}
     </div>
   );
 };

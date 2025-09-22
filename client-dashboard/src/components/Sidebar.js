@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Home,
-  Phone,
-  Mic,
-  FileText,
-  BarChart3,
-  Settings,
+import { 
+  BarChart3, 
+  Phone, 
+  Mic, 
+  FileText, 
+  User,
   Menu,
-  X,
-  Users
+  X
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -17,17 +15,16 @@ const Sidebar = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: Home },
-    { name: 'Clients', href: '/clients', icon: Users },
-    { name: 'Calls', href: '/calls', icon: Phone },
+    { name: 'Dashboard', href: '/', icon: BarChart3 },
+    { name: 'My Calls', href: '/calls', icon: Phone },
     { name: 'Recordings', href: '/recordings', icon: Mic },
     { name: 'Transcripts', href: '/transcripts', icon: FileText },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'Numbers', href: '/numbers', icon: Phone },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Profile', href: '/profile', icon: User },
   ];
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
 
   return (
     <>
@@ -35,9 +32,9 @@ const Sidebar = () => {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-md bg-white shadow-lg"
+          className="p-2 rounded-lg bg-primary-600 text-white shadow-lg"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
@@ -50,7 +47,7 @@ const Sidebar = () => {
         <div className="flex items-center justify-center h-20 bg-gradient-to-r from-primary-700 to-primary-800 dark:from-gray-800 dark:to-gray-700 border-b border-primary-900 dark:border-gray-600">
           <div className="text-center">
             <span className="text-white text-2xl font-extrabold tracking-wide">AgentAI</span>
-            <p className="text-primary-200 dark:text-gray-300 text-xs mt-1">Admin Dashboard</p>
+            <p className="text-primary-200 dark:text-gray-300 text-xs mt-1">Client Portal</p>
           </div>
         </div>
         
@@ -82,14 +79,22 @@ const Sidebar = () => {
           </div>
         </nav>
 
-
-        {/* Footer spacer */}
-        <div className="absolute bottom-6 left-6 right-6"></div>
+        {/* Footer */}
+        <div className="p-6 border-t border-primary-900 dark:border-gray-600">
+          <div className="text-center">
+            <p className="text-primary-200 dark:text-gray-300 text-xs">
+              AgentAI Client Portal
+            </p>
+            <p className="text-primary-300 dark:text-gray-400 text-xs mt-1">
+              Version 1.0.0
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Mobile overlay */}
       {isOpen && (
-        <div
+        <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />

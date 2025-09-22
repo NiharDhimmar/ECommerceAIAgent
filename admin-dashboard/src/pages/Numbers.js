@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import api from '../api';
 import toast from 'react-hot-toast';
 import { Search, ShoppingCart, RefreshCw, Globe, Phone, Trash2, ListChecks, Link2 } from 'lucide-react';
 
@@ -34,26 +34,26 @@ const Numbers = () => {
     return params.toString();
   }, [country, numberType, contains, areaCode, voiceEnabled, smsEnabled, mmsEnabled, limit]);
 
-  const apiBases = ['', 'http://localhost:5000'];
+  const apiBases = useMemo(() => [''], []);
 
-  const getWithFallback = async (path) => {
+  const getWithFallback = useCallback(async (path) => {
     let lastErr = null;
     for (const base of apiBases) {
       try {
-        const { data } = await axios.get(`${base}${path}`);
+        const { data } = await api.get(`${base}${path}`);
         return data;
       } catch (err) {
         lastErr = err;
       }
     }
     throw lastErr;
-  };
+  }, [apiBases]);
 
   const postWithFallback = async (path, body) => {
     let lastErr = null;
     for (const base of apiBases) {
       try {
-        const { data } = await axios.post(`${base}${path}`, body);
+        const { data } = await api.post(`${base}${path}`, body);
         return data;
       } catch (err) {
         lastErr = err;
@@ -66,7 +66,7 @@ const Numbers = () => {
     let lastErr = null;
     for (const base of apiBases) {
       try {
-        const { data } = await axios.delete(`${base}${path}`);
+        const { data } = await api.delete(`${base}${path}`);
         return data;
       } catch (err) {
         lastErr = err;
@@ -90,7 +90,7 @@ const Numbers = () => {
     }
   };
 
-  const loadOwned = async () => {
+  const loadOwned = useCallback(async () => {
     try {
       setLoadingOwned(true);
       const data = await getWithFallback('/api/twilio/my-numbers');
@@ -102,7 +102,7 @@ const Numbers = () => {
     } finally {
       setLoadingOwned(false);
     }
-  };
+  }, [getWithFallback]);
 
   useEffect(() => {
     loadOwned();
@@ -116,7 +116,7 @@ const Numbers = () => {
         // ignore
       }
     })();
-  }, []);
+  }, [loadOwned, getWithFallback]);
 
   const purchase = async (phoneNumber) => {
     try {
@@ -124,7 +124,7 @@ const Numbers = () => {
       const maybeUrl = (voiceUrlByNumber[phoneNumber] || '').trim();
       const payload = {
         phoneNumber,
-        friendlyName: 'VoiceAI Number',
+        friendlyName: 'AgentAI Number',
       };
       if (maybeUrl) {
         payload.voiceUrl = maybeUrl;
@@ -396,6 +396,4 @@ const Numbers = () => {
 };
 
 export default Numbers;
-
-
 

@@ -1,0 +1,480 @@
+2025-09-17 13:02:31,516 INFO Created directory: logs
+2025-09-17 13:02:31,518 INFO Initializing database...
+2025-09-17 13:02:31,588 INFO Table 'users' created/verified
+2025-09-17 13:02:31,589 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:02:31,589 INFO Table 'transcripts' created/verified
+2025-09-17 13:02:31,590 INFO Table 'recordings' created/verified
+2025-09-17 13:02:31,620 INFO Table 'calls' created/verified
+2025-09-17 13:02:31,675 INFO Initializing services...
+2025-09-17 13:02:31,683 INFO VoiceAI application initialized successfully
+2025-09-17 13:02:31,702 WARNING  * Debugger is active!
+2025-09-17 13:02:31,711 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:03:04,187 INFO Initializing database...
+2025-09-17 13:03:04,281 INFO Table 'users' created/verified
+2025-09-17 13:03:04,282 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:03:04,283 INFO Table 'transcripts' created/verified
+2025-09-17 13:03:04,284 INFO Table 'recordings' created/verified
+2025-09-17 13:03:04,286 INFO Table 'calls' created/verified
+2025-09-17 13:03:04,359 INFO Initializing services...
+2025-09-17 13:03:04,370 INFO VoiceAI application initialized successfully
+2025-09-17 13:03:04,425 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.10.137:5000
+2025-09-17 13:03:04,428 INFO [33mPress CTRL+C to quit[0m
+2025-09-17 13:03:04,434 INFO  * Restarting with stat
+2025-09-17 13:03:11,173 INFO Initializing database...
+2025-09-17 13:03:11,239 INFO Table 'users' created/verified
+2025-09-17 13:03:11,241 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:03:11,242 INFO Table 'transcripts' created/verified
+2025-09-17 13:03:11,243 INFO Table 'recordings' created/verified
+2025-09-17 13:03:11,245 INFO Table 'calls' created/verified
+2025-09-17 13:03:11,296 INFO Initializing services...
+2025-09-17 13:03:11,313 INFO VoiceAI application initialized successfully
+2025-09-17 13:03:11,343 WARNING  * Debugger is active!
+2025-09-17 13:03:11,350 INFO  * Debugger PIN: 435-193-633
+2025-09-17 13:06:49,335 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:06:49,796 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\config\\__init__.py', reloading
+2025-09-17 13:06:50,619 INFO  * Restarting with stat
+2025-09-17 13:07:01,922 INFO Initializing database...
+2025-09-17 13:07:01,949 INFO Initializing database...
+2025-09-17 13:07:02,014 INFO Table 'users' created/verified
+2025-09-17 13:07:02,025 INFO Table 'users' created/verified
+2025-09-17 13:07:02,025 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:07:02,028 INFO Table 'transcripts' created/verified
+2025-09-17 13:07:02,029 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:07:02,030 INFO Table 'recordings' created/verified
+2025-09-17 13:07:02,030 INFO Table 'transcripts' created/verified
+2025-09-17 13:07:02,036 INFO Table 'calls' created/verified
+2025-09-17 13:07:02,036 INFO Table 'recordings' created/verified
+2025-09-17 13:07:02,040 INFO Table 'calls' created/verified
+2025-09-17 13:07:02,122 INFO Initializing services...
+2025-09-17 13:07:02,123 INFO Initializing services...
+2025-09-17 13:07:02,134 INFO VoiceAI application initialized successfully
+2025-09-17 13:07:02,135 INFO VoiceAI application initialized successfully
+2025-09-17 13:07:02,159 WARNING  * Debugger is active!
+2025-09-17 13:07:02,163 WARNING  * Debugger is active!
+2025-09-17 13:07:02,170 INFO  * Debugger PIN: 435-193-633
+2025-09-17 13:07:02,173 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:07:08,071 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app_factory.py', reloading
+2025-09-17 13:07:08,495 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\config\\__init__.py', reloading
+2025-09-17 13:07:09,745 INFO  * Restarting with stat
+2025-09-17 13:07:19,221 INFO Initializing database...
+2025-09-17 13:07:19,277 INFO Table 'users' created/verified
+2025-09-17 13:07:19,278 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:07:19,279 INFO Table 'transcripts' created/verified
+2025-09-17 13:07:19,280 INFO Table 'recordings' created/verified
+2025-09-17 13:07:19,280 INFO Table 'calls' created/verified
+2025-09-17 13:07:19,330 INFO Initializing services...
+2025-09-17 13:07:19,337 INFO VoiceAI application initialized successfully
+2025-09-17 13:07:19,359 WARNING  * Debugger is active!
+2025-09-17 13:07:19,367 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:09:18,244 INFO Initializing database...
+2025-09-17 13:09:18,329 INFO Table 'users' created/verified
+2025-09-17 13:09:18,335 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:09:18,340 INFO Table 'transcripts' created/verified
+2025-09-17 13:09:18,347 INFO Table 'recordings' created/verified
+2025-09-17 13:09:18,347 INFO Table 'calls' created/verified
+2025-09-17 13:09:18,556 INFO Initializing services...
+2025-09-17 13:09:18,584 INFO VoiceAI application initialized successfully
+2025-09-17 13:09:18,705 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.10.137:5000
+2025-09-17 13:09:18,717 INFO [33mPress CTRL+C to quit[0m
+2025-09-17 13:09:18,731 INFO  * Restarting with stat
+2025-09-17 13:09:25,257 INFO Initializing database...
+2025-09-17 13:09:25,315 INFO Table 'users' created/verified
+2025-09-17 13:09:25,317 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:09:25,317 INFO Table 'transcripts' created/verified
+2025-09-17 13:09:25,318 INFO Table 'recordings' created/verified
+2025-09-17 13:09:25,319 INFO Table 'calls' created/verified
+2025-09-17 13:09:25,363 INFO Initializing services...
+2025-09-17 13:09:25,372 INFO VoiceAI application initialized successfully
+2025-09-17 13:09:25,399 WARNING  * Debugger is active!
+2025-09-17 13:09:25,407 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:09:46,510 INFO 127.0.0.1 - - [17/Sep/2025 13:09:46] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:09:46,511 INFO 127.0.0.1 - - [17/Sep/2025 13:09:46] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:09:46,620 INFO 127.0.0.1 - - [17/Sep/2025 13:09:46] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:09:46,767 INFO 127.0.0.1 - - [17/Sep/2025 13:09:46] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:09:47,354 INFO 127.0.0.1 - - [17/Sep/2025 13:09:47] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:09:58,215 INFO User admin logged out
+2025-09-17 13:09:58,249 INFO 127.0.0.1 - - [17/Sep/2025 13:09:58] "POST /api/auth/logout HTTP/1.1" 200 -
+2025-09-17 13:10:00,514 INFO 127.0.0.1 - - [17/Sep/2025 13:10:00] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-09-17 13:10:01,351 INFO User admin logged in successfully
+2025-09-17 13:10:01,352 INFO 127.0.0.1 - - [17/Sep/2025 13:10:01] "POST /api/auth/login HTTP/1.1" 200 -
+2025-09-17 13:10:01,449 INFO 127.0.0.1 - - [17/Sep/2025 13:10:01] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:10:01,848 INFO 127.0.0.1 - - [17/Sep/2025 13:10:01] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:10:02,230 INFO 127.0.0.1 - - [17/Sep/2025 13:10:02] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:10:02,242 INFO 127.0.0.1 - - [17/Sep/2025 13:10:02] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:10:02,299 INFO 127.0.0.1 - - [17/Sep/2025 13:10:02] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:10:02,800 INFO 127.0.0.1 - - [17/Sep/2025 13:10:02] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:10:06,063 INFO 127.0.0.1 - - [17/Sep/2025 13:10:06] "[33mGET /api/clients?page=1&pageSize=10 HTTP/1.1[0m" 404 -
+2025-09-17 13:10:06,132 INFO 127.0.0.1 - - [17/Sep/2025 13:10:06] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:10:06,335 INFO 127.0.0.1 - - [17/Sep/2025 13:10:06] "[33mGET /api/clients?page=1&pageSize=10 HTTP/1.1[0m" 404 -
+2025-09-17 13:10:47,454 INFO 127.0.0.1 - - [17/Sep/2025 13:10:47] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:10:47,460 INFO 127.0.0.1 - - [17/Sep/2025 13:10:47] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:10:47,792 INFO 127.0.0.1 - - [17/Sep/2025 13:10:47] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:10:48,953 INFO 127.0.0.1 - - [17/Sep/2025 13:10:48] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:10:49,286 INFO 127.0.0.1 - - [17/Sep/2025 13:10:49] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:10:49,343 INFO 127.0.0.1 - - [17/Sep/2025 13:10:49] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:10:56,139 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:10:58,694 INFO  * Restarting with stat
+2025-09-17 13:11:27,978 INFO Initializing database...
+2025-09-17 13:11:28,030 INFO Table 'users' created/verified
+2025-09-17 13:11:28,035 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:11:28,037 INFO Table 'transcripts' created/verified
+2025-09-17 13:11:28,038 INFO Table 'recordings' created/verified
+2025-09-17 13:11:28,040 INFO Table 'calls' created/verified
+2025-09-17 13:11:28,091 INFO Initializing services...
+2025-09-17 13:11:28,107 INFO VoiceAI application initialized successfully
+2025-09-17 13:11:28,141 WARNING  * Debugger is active!
+2025-09-17 13:11:28,160 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:11:41,268 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:11:42,282 INFO  * Restarting with stat
+2025-09-17 13:11:49,106 INFO Initializing database...
+2025-09-17 13:11:49,202 INFO Table 'users' created/verified
+2025-09-17 13:11:49,203 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:11:49,204 INFO Table 'transcripts' created/verified
+2025-09-17 13:11:49,207 INFO Table 'recordings' created/verified
+2025-09-17 13:11:49,213 INFO Table 'calls' created/verified
+2025-09-17 13:11:49,283 INFO Initializing services...
+2025-09-17 13:11:49,300 INFO VoiceAI application initialized successfully
+2025-09-17 13:11:49,335 WARNING  * Debugger is active!
+2025-09-17 13:11:49,342 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:12:00,714 INFO 127.0.0.1 - - [17/Sep/2025 13:12:00] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:12:00,932 INFO 127.0.0.1 - - [17/Sep/2025 13:12:00] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:12:01,481 INFO 127.0.0.1 - - [17/Sep/2025 13:12:01] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:12:01,481 INFO 127.0.0.1 - - [17/Sep/2025 13:12:01] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:12:01,737 INFO 127.0.0.1 - - [17/Sep/2025 13:12:01] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:12:01,740 INFO 127.0.0.1 - - [17/Sep/2025 13:12:01] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:12:02,276 INFO 127.0.0.1 - - [17/Sep/2025 13:12:02] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:12:04,192 INFO 127.0.0.1 - - [17/Sep/2025 13:12:04] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:12:04,626 INFO 127.0.0.1 - - [17/Sep/2025 13:12:04] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:12:04,717 INFO 127.0.0.1 - - [17/Sep/2025 13:12:04] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:12:14,488 INFO 127.0.0.1 - - [17/Sep/2025 13:12:14] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:12:14,502 INFO 127.0.0.1 - - [17/Sep/2025 13:12:14] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:12:14,664 INFO 127.0.0.1 - - [17/Sep/2025 13:12:14] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:12:14,763 INFO 127.0.0.1 - - [17/Sep/2025 13:12:14] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:12:15,363 INFO 127.0.0.1 - - [17/Sep/2025 13:12:15] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:12:25,150 INFO 127.0.0.1 - - [17/Sep/2025 13:12:25] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:12:25,459 INFO 127.0.0.1 - - [17/Sep/2025 13:12:25] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:12:25,530 INFO 127.0.0.1 - - [17/Sep/2025 13:12:25] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:13:58,796 INFO Initializing database...
+2025-09-17 13:13:58,863 INFO Table 'users' created/verified
+2025-09-17 13:13:58,864 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:13:58,865 INFO Table 'transcripts' created/verified
+2025-09-17 13:13:58,866 INFO Table 'recordings' created/verified
+2025-09-17 13:13:58,867 INFO Table 'calls' created/verified
+2025-09-17 13:13:58,911 INFO Initializing services...
+2025-09-17 13:13:58,922 INFO VoiceAI application initialized successfully
+2025-09-17 13:13:58,970 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.10.137:5000
+2025-09-17 13:13:58,972 INFO [33mPress CTRL+C to quit[0m
+2025-09-17 13:13:58,978 INFO  * Restarting with stat
+2025-09-17 13:14:06,292 INFO Initializing database...
+2025-09-17 13:14:06,386 INFO Table 'users' created/verified
+2025-09-17 13:14:06,388 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:14:06,390 INFO Table 'transcripts' created/verified
+2025-09-17 13:14:06,391 INFO Table 'recordings' created/verified
+2025-09-17 13:14:06,393 INFO Table 'calls' created/verified
+2025-09-17 13:14:06,447 INFO Initializing services...
+2025-09-17 13:14:06,463 INFO VoiceAI application initialized successfully
+2025-09-17 13:14:06,490 WARNING  * Debugger is active!
+2025-09-17 13:14:06,501 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:14:54,454 INFO 127.0.0.1 - - [17/Sep/2025 13:14:54] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:14:54,702 INFO 127.0.0.1 - - [17/Sep/2025 13:14:54] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:14:54,927 INFO 127.0.0.1 - - [17/Sep/2025 13:14:54] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:14:55,129 INFO 127.0.0.1 - - [17/Sep/2025 13:14:55] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:14:55,398 INFO 127.0.0.1 - - [17/Sep/2025 13:14:55] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:14:55,544 INFO 127.0.0.1 - - [17/Sep/2025 13:14:55] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:15:01,747 INFO 127.0.0.1 - - [17/Sep/2025 13:15:01] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:15:02,067 INFO 127.0.0.1 - - [17/Sep/2025 13:15:02] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:15:02,131 INFO 127.0.0.1 - - [17/Sep/2025 13:15:02] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:03,577 INFO 127.0.0.1 - - [17/Sep/2025 13:15:03] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:15:03,580 INFO 127.0.0.1 - - [17/Sep/2025 13:15:03] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:03,834 INFO 127.0.0.1 - - [17/Sep/2025 13:15:03] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:15:18,363 INFO 127.0.0.1 - - [17/Sep/2025 13:15:18] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:18,757 INFO 127.0.0.1 - - [17/Sep/2025 13:15:18] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:19,155 INFO 127.0.0.1 - - [17/Sep/2025 13:15:19] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:15:19,176 INFO 127.0.0.1 - - [17/Sep/2025 13:15:19] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:15:19,361 INFO 127.0.0.1 - - [17/Sep/2025 13:15:19] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:15:19,554 INFO 127.0.0.1 - - [17/Sep/2025 13:15:19] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:15:28,784 INFO 127.0.0.1 - - [17/Sep/2025 13:15:28] "[31m[1mGET /api/auth/me HTTP/1.1[0m" 401 -
+2025-09-17 13:15:29,048 INFO 127.0.0.1 - - [17/Sep/2025 13:15:29] "[31m[1mGET /api/auth/me HTTP/1.1[0m" 401 -
+2025-09-17 13:15:31,490 INFO 127.0.0.1 - - [17/Sep/2025 13:15:31] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-09-17 13:15:31,953 INFO User admin logged in successfully
+2025-09-17 13:15:31,955 INFO 127.0.0.1 - - [17/Sep/2025 13:15:31] "POST /api/auth/login HTTP/1.1" 200 -
+2025-09-17 13:15:32,345 INFO 127.0.0.1 - - [17/Sep/2025 13:15:32] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:32,611 INFO 127.0.0.1 - - [17/Sep/2025 13:15:32] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:32,817 INFO 127.0.0.1 - - [17/Sep/2025 13:15:32] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:15:33,003 INFO 127.0.0.1 - - [17/Sep/2025 13:15:33] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:15:33,169 INFO 127.0.0.1 - - [17/Sep/2025 13:15:33] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:15:33,237 INFO 127.0.0.1 - - [17/Sep/2025 13:15:33] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:15:42,411 INFO 127.0.0.1 - - [17/Sep/2025 13:15:42] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:15:42,720 INFO 127.0.0.1 - - [17/Sep/2025 13:15:42] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:15:42,791 INFO 127.0.0.1 - - [17/Sep/2025 13:15:42] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:44,534 INFO 127.0.0.1 - - [17/Sep/2025 13:15:44] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:15:44,538 INFO 127.0.0.1 - - [17/Sep/2025 13:15:44] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:15:44,798 INFO 127.0.0.1 - - [17/Sep/2025 13:15:44] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:16:24,301 INFO 127.0.0.1 - - [17/Sep/2025 13:16:24] "[31m[1mGET /api/dashboard/stats HTTP/1.1[0m" 401 -
+2025-09-17 13:16:57,592 INFO 127.0.0.1 - - [17/Sep/2025 13:16:57] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:16:57,823 INFO 127.0.0.1 - - [17/Sep/2025 13:16:57] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:16:58,056 INFO 127.0.0.1 - - [17/Sep/2025 13:16:58] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:16:58,239 INFO 127.0.0.1 - - [17/Sep/2025 13:16:58] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:16:58,423 INFO 127.0.0.1 - - [17/Sep/2025 13:16:58] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:16:58,599 INFO 127.0.0.1 - - [17/Sep/2025 13:16:58] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:17:02,645 INFO 127.0.0.1 - - [17/Sep/2025 13:17:02] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:17:02,936 INFO 127.0.0.1 - - [17/Sep/2025 13:17:02] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:17:03,068 INFO 127.0.0.1 - - [17/Sep/2025 13:17:03] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:17:05,952 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:17:08,773 INFO  * Restarting with stat
+2025-09-17 13:17:38,557 INFO Initializing database...
+2025-09-17 13:17:38,621 INFO Table 'users' created/verified
+2025-09-17 13:17:38,625 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:17:38,635 INFO Table 'transcripts' created/verified
+2025-09-17 13:17:38,635 INFO Table 'recordings' created/verified
+2025-09-17 13:17:38,635 INFO Table 'calls' created/verified
+2025-09-17 13:17:38,705 INFO Initializing services...
+2025-09-17 13:17:38,714 INFO VoiceAI application initialized successfully
+2025-09-17 13:17:38,747 WARNING  * Debugger is active!
+2025-09-17 13:17:38,760 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:17:39,422 INFO 127.0.0.1 - - [17/Sep/2025 13:17:39] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:17:39,452 INFO 127.0.0.1 - - [17/Sep/2025 13:17:39] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:17:40,462 INFO 127.0.0.1 - - [17/Sep/2025 13:17:40] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:17:40,727 INFO 127.0.0.1 - - [17/Sep/2025 13:17:40] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:17:51,887 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\models\\database.py', reloading
+2025-09-17 13:17:53,078 INFO  * Restarting with stat
+2025-09-17 13:18:15,381 INFO Initializing database...
+2025-09-17 13:18:15,470 INFO Table 'users' created/verified
+2025-09-17 13:18:15,474 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:18:15,481 INFO Table 'transcripts' created/verified
+2025-09-17 13:18:15,483 INFO Table 'recordings' created/verified
+2025-09-17 13:18:15,493 INFO Table 'calls' created/verified
+2025-09-17 13:18:15,553 INFO Initializing services...
+2025-09-17 13:18:15,586 INFO VoiceAI application initialized successfully
+2025-09-17 13:18:15,635 WARNING  * Debugger is active!
+2025-09-17 13:18:15,653 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:18:18,967 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\models\\database.py', reloading
+2025-09-17 13:18:20,930 INFO  * Restarting with stat
+2025-09-17 13:18:46,744 INFO Initializing database...
+2025-09-17 13:18:46,805 INFO Table 'users' created/verified
+2025-09-17 13:18:46,805 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:18:46,805 INFO Table 'transcripts' created/verified
+2025-09-17 13:18:46,805 INFO Table 'recordings' created/verified
+2025-09-17 13:18:46,805 INFO Table 'calls' created/verified
+2025-09-17 13:18:46,858 INFO Initializing services...
+2025-09-17 13:18:46,904 INFO VoiceAI application initialized successfully
+2025-09-17 13:18:46,952 WARNING  * Debugger is active!
+2025-09-17 13:18:47,000 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:19:10,319 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:19:11,139 INFO  * Restarting with stat
+2025-09-17 13:19:18,503 INFO Initializing database...
+2025-09-17 13:19:18,561 INFO Table 'users' created/verified
+2025-09-17 13:19:18,562 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:19:18,563 INFO Table 'transcripts' created/verified
+2025-09-17 13:19:18,564 INFO Table 'recordings' created/verified
+2025-09-17 13:19:18,564 INFO Table 'calls' created/verified
+2025-09-17 13:19:18,617 INFO Initializing services...
+2025-09-17 13:19:18,625 INFO VoiceAI application initialized successfully
+2025-09-17 13:19:18,650 WARNING  * Debugger is active!
+2025-09-17 13:19:18,656 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:19:36,570 INFO 127.0.0.1 - - [17/Sep/2025 13:19:36] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:36,823 INFO 127.0.0.1 - - [17/Sep/2025 13:19:36] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:36,939 ERROR Get transcripts error: 'callId'
+2025-09-17 13:19:37,053 INFO 127.0.0.1 - - [17/Sep/2025 13:19:37] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:19:37,209 INFO 127.0.0.1 - - [17/Sep/2025 13:19:37] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:19:37,209 ERROR Get transcripts error: 'callId'
+2025-09-17 13:19:37,329 INFO 127.0.0.1 - - [17/Sep/2025 13:19:37] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:19:37,409 INFO 127.0.0.1 - - [17/Sep/2025 13:19:37] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:19:40,819 INFO 127.0.0.1 - - [17/Sep/2025 13:19:40] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:19:41,126 INFO 127.0.0.1 - - [17/Sep/2025 13:19:41] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:41,181 INFO 127.0.0.1 - - [17/Sep/2025 13:19:41] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:19:46,023 INFO 127.0.0.1 - - [17/Sep/2025 13:19:46] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:19:46,023 INFO 127.0.0.1 - - [17/Sep/2025 13:19:46] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:46,280 INFO 127.0.0.1 - - [17/Sep/2025 13:19:46] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:19:51,353 INFO 127.0.0.1 - - [17/Sep/2025 13:19:51] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:19:51,653 INFO 127.0.0.1 - - [17/Sep/2025 13:19:51] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:51,734 INFO 127.0.0.1 - - [17/Sep/2025 13:19:51] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:19:53,519 INFO 127.0.0.1 - - [17/Sep/2025 13:19:53] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:19:53,519 INFO 127.0.0.1 - - [17/Sep/2025 13:19:53] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:53,779 INFO 127.0.0.1 - - [17/Sep/2025 13:19:53] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:19:55,052 ERROR Get transcripts error: 'callId'
+2025-09-17 13:19:55,052 INFO 127.0.0.1 - - [17/Sep/2025 13:19:55] "GET /api/transcripts HTTP/1.1" 200 -
+2025-09-17 13:19:55,339 INFO 127.0.0.1 - - [17/Sep/2025 13:19:55] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:55,417 ERROR Get transcripts error: 'callId'
+2025-09-17 13:19:55,417 INFO 127.0.0.1 - - [17/Sep/2025 13:19:55] "GET /api/transcripts HTTP/1.1" 200 -
+2025-09-17 13:19:58,052 INFO 127.0.0.1 - - [17/Sep/2025 13:19:58] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:58,923 INFO 127.0.0.1 - - [17/Sep/2025 13:19:58] "[33mGET /api/twilio/my-numbers HTTP/1.1[0m" 404 -
+2025-09-17 13:19:59,243 INFO 127.0.0.1 - - [17/Sep/2025 13:19:59] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-09-17 13:19:59,246 INFO 127.0.0.1 - - [17/Sep/2025 13:19:59] "[33mGET /api/twilio/my-numbers HTTP/1.1[0m" 404 -
+2025-09-17 13:19:59,369 INFO 127.0.0.1 - - [17/Sep/2025 13:19:59] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:19:59,553 INFO 127.0.0.1 - - [17/Sep/2025 13:19:59] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-09-17 13:20:09,988 INFO 127.0.0.1 - - [17/Sep/2025 13:20:09] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:20:10,724 INFO User admin logged out
+2025-09-17 13:20:10,726 INFO 127.0.0.1 - - [17/Sep/2025 13:20:10] "POST /api/auth/logout HTTP/1.1" 200 -
+2025-09-17 13:20:13,010 INFO 127.0.0.1 - - [17/Sep/2025 13:20:13] "OPTIONS /api/auth/login HTTP/1.1" 200 -
+2025-09-17 13:20:13,768 INFO User admin logged in successfully
+2025-09-17 13:20:13,770 INFO 127.0.0.1 - - [17/Sep/2025 13:20:13] "POST /api/auth/login HTTP/1.1" 200 -
+2025-09-17 13:20:13,831 INFO 127.0.0.1 - - [17/Sep/2025 13:20:13] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:20:14,220 INFO 127.0.0.1 - - [17/Sep/2025 13:20:14] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:20:14,606 ERROR Get transcripts error: 'callId'
+2025-09-17 13:20:14,625 INFO 127.0.0.1 - - [17/Sep/2025 13:20:14] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:20:14,708 INFO 127.0.0.1 - - [17/Sep/2025 13:20:14] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:20:14,921 INFO 127.0.0.1 - - [17/Sep/2025 13:20:14] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:20:15,053 ERROR Get transcripts error: 'callId'
+2025-09-17 13:20:15,175 INFO 127.0.0.1 - - [17/Sep/2025 13:20:15] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:20:19,463 INFO 127.0.0.1 - - [17/Sep/2025 13:20:19] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:20:19,789 INFO 127.0.0.1 - - [17/Sep/2025 13:20:19] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:20:19,831 INFO 127.0.0.1 - - [17/Sep/2025 13:20:19] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:20:22,927 INFO 127.0.0.1 - - [17/Sep/2025 13:20:22] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:20:22,937 INFO 127.0.0.1 - - [17/Sep/2025 13:20:22] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:20:23,189 INFO 127.0.0.1 - - [17/Sep/2025 13:20:23] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:21:06,859 INFO 127.0.0.1 - - [17/Sep/2025 13:21:06] "[33mGET /api/twilio/my-numbers HTTP/1.1[0m" 404 -
+2025-09-17 13:21:07,174 INFO 127.0.0.1 - - [17/Sep/2025 13:21:07] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-09-17 13:21:07,185 INFO 127.0.0.1 - - [17/Sep/2025 13:21:07] "[33mGET /api/twilio/my-numbers HTTP/1.1[0m" 404 -
+2025-09-17 13:21:07,266 INFO 127.0.0.1 - - [17/Sep/2025 13:21:07] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:21:07,502 INFO 127.0.0.1 - - [17/Sep/2025 13:21:07] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-09-17 13:22:01,192 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\models\\database.py', reloading
+2025-09-17 13:22:03,178 INFO  * Restarting with stat
+2025-09-17 13:22:29,994 INFO Initializing database...
+2025-09-17 13:22:30,062 INFO Table 'users' created/verified
+2025-09-17 13:22:30,063 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:22:30,064 INFO Table 'transcripts' created/verified
+2025-09-17 13:22:30,064 INFO Table 'recordings' created/verified
+2025-09-17 13:22:30,065 INFO Table 'calls' created/verified
+2025-09-17 13:22:30,118 INFO Initializing services...
+2025-09-17 13:22:30,131 INFO VoiceAI application initialized successfully
+2025-09-17 13:22:30,181 WARNING  * Debugger is active!
+2025-09-17 13:22:30,196 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:22:39,808 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:22:42,104 INFO  * Restarting with stat
+2025-09-17 13:23:08,633 INFO Initializing database...
+2025-09-17 13:23:08,700 INFO Table 'users' created/verified
+2025-09-17 13:23:08,709 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:23:08,710 INFO Table 'transcripts' created/verified
+2025-09-17 13:23:08,711 INFO Table 'recordings' created/verified
+2025-09-17 13:23:08,712 INFO Table 'calls' created/verified
+2025-09-17 13:23:08,779 INFO Initializing services...
+2025-09-17 13:23:08,795 INFO VoiceAI application initialized successfully
+2025-09-17 13:23:08,818 WARNING  * Debugger is active!
+2025-09-17 13:23:08,826 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:23:20,522 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:23:21,437 INFO  * Restarting with stat
+2025-09-17 13:23:29,248 INFO Initializing database...
+2025-09-17 13:23:29,313 INFO Table 'users' created/verified
+2025-09-17 13:23:29,318 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:23:29,320 INFO Table 'transcripts' created/verified
+2025-09-17 13:23:29,322 INFO Table 'recordings' created/verified
+2025-09-17 13:23:29,323 INFO Table 'calls' created/verified
+2025-09-17 13:23:29,410 INFO Initializing services...
+2025-09-17 13:23:29,436 INFO VoiceAI application initialized successfully
+2025-09-17 13:23:29,467 WARNING  * Debugger is active!
+2025-09-17 13:23:29,478 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:23:32,847 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:23:33,685 INFO  * Restarting with stat
+2025-09-17 13:23:42,516 INFO Initializing database...
+2025-09-17 13:23:42,591 INFO Table 'users' created/verified
+2025-09-17 13:23:42,593 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:23:42,595 INFO Table 'transcripts' created/verified
+2025-09-17 13:23:42,599 INFO Table 'recordings' created/verified
+2025-09-17 13:23:42,609 INFO Table 'calls' created/verified
+2025-09-17 13:23:42,697 INFO Initializing services...
+2025-09-17 13:23:42,717 INFO VoiceAI application initialized successfully
+2025-09-17 13:23:42,773 WARNING  * Debugger is active!
+2025-09-17 13:23:42,834 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:44:05,501 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:44:07,303 INFO  * Restarting with stat
+2025-09-17 13:44:16,067 INFO Initializing database...
+2025-09-17 13:44:16,255 INFO Table 'users' created/verified
+2025-09-17 13:44:16,256 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:44:16,257 INFO Table 'transcripts' created/verified
+2025-09-17 13:44:16,258 INFO Table 'recordings' created/verified
+2025-09-17 13:44:16,259 INFO Table 'calls' created/verified
+2025-09-17 13:44:16,321 INFO Initializing services...
+2025-09-17 13:44:16,335 INFO VoiceAI application initialized successfully
+2025-09-17 13:44:16,369 WARNING  * Debugger is active!
+2025-09-17 13:44:16,379 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:44:18,044 INFO 127.0.0.1 - - [17/Sep/2025 13:44:18] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:44:18,045 INFO 127.0.0.1 - - [17/Sep/2025 13:44:18] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:44:18,177 INFO 127.0.0.1 - - [17/Sep/2025 13:44:18] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:18,303 INFO 127.0.0.1 - - [17/Sep/2025 13:44:18] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:44:18,361 INFO 127.0.0.1 - - [17/Sep/2025 13:44:18] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:44:24,343 INFO 127.0.0.1 - - [17/Sep/2025 13:44:24] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:44:24,661 INFO 127.0.0.1 - - [17/Sep/2025 13:44:24] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:44:24,707 INFO 127.0.0.1 - - [17/Sep/2025 13:44:24] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:26,086 INFO 127.0.0.1 - - [17/Sep/2025 13:44:26] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:44:26,172 INFO 127.0.0.1 - - [17/Sep/2025 13:44:26] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:26,350 INFO 127.0.0.1 - - [17/Sep/2025 13:44:26] "GET /api/calls HTTP/1.1" 200 -
+2025-09-17 13:44:30,535 INFO 127.0.0.1 - - [17/Sep/2025 13:44:30] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:44:30,861 INFO 127.0.0.1 - - [17/Sep/2025 13:44:30] "GET /api/recordings HTTP/1.1" 200 -
+2025-09-17 13:44:30,939 INFO 127.0.0.1 - - [17/Sep/2025 13:44:30] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:32,717 INFO 127.0.0.1 - - [17/Sep/2025 13:44:32] "GET /api/transcripts HTTP/1.1" 200 -
+2025-09-17 13:44:32,862 INFO 127.0.0.1 - - [17/Sep/2025 13:44:32] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:32,961 INFO 127.0.0.1 - - [17/Sep/2025 13:44:32] "GET /api/transcripts HTTP/1.1" 200 -
+2025-09-17 13:44:43,870 INFO 127.0.0.1 - - [17/Sep/2025 13:44:43] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:45,814 INFO 127.0.0.1 - - [17/Sep/2025 13:44:45] "GET /api/twilio/my-numbers HTTP/1.1" 200 -
+2025-09-17 13:44:45,817 ERROR Get settings error: name 'Config' is not defined
+2025-09-17 13:44:45,820 INFO 127.0.0.1 - - [17/Sep/2025 13:44:45] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-09-17 13:44:45,911 INFO 127.0.0.1 - - [17/Sep/2025 13:44:45] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:44:46,079 INFO 127.0.0.1 - - [17/Sep/2025 13:44:46] "GET /api/twilio/my-numbers HTTP/1.1" 200 -
+2025-09-17 13:44:46,126 ERROR Get settings error: name 'Config' is not defined
+2025-09-17 13:44:46,126 INFO 127.0.0.1 - - [17/Sep/2025 13:44:46] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-09-17 13:44:47,697 INFO 127.0.0.1 - - [17/Sep/2025 13:44:47] "[33mGET /api/twilio/available-numbers?country=US&type=local&voice_enabled=true&limit=20 HTTP/1.1[0m" 404 -
+2025-09-17 13:45:11,678 INFO 127.0.0.1 - - [17/Sep/2025 13:45:11] "GET /api/twilio/my-numbers HTTP/1.1" 200 -
+2025-09-17 13:45:13,799 INFO 127.0.0.1 - - [17/Sep/2025 13:45:13] "GET /api/twilio/my-numbers HTTP/1.1" 200 -
+2025-09-17 13:45:16,494 INFO 127.0.0.1 - - [17/Sep/2025 13:45:16] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:45:16,495 INFO 127.0.0.1 - - [17/Sep/2025 13:45:16] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:45:16,589 INFO 127.0.0.1 - - [17/Sep/2025 13:45:16] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:45:16,760 INFO 127.0.0.1 - - [17/Sep/2025 13:45:16] "GET /api/dashboard/stats HTTP/1.1" 200 -
+2025-09-17 13:45:16,809 INFO 127.0.0.1 - - [17/Sep/2025 13:45:16] "GET /api/calls?limit=4 HTTP/1.1" 200 -
+2025-09-17 13:45:19,241 INFO 127.0.0.1 - - [17/Sep/2025 13:45:19] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:45:19,558 INFO 127.0.0.1 - - [17/Sep/2025 13:45:19] "GET /api/clients?page=1&pageSize=10 HTTP/1.1" 200 -
+2025-09-17 13:45:19,627 INFO 127.0.0.1 - - [17/Sep/2025 13:45:19] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:45:44,175 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:45:46,529 INFO  * Restarting with stat
+2025-09-17 13:45:57,820 INFO Initializing database...
+2025-09-17 13:45:57,879 INFO Table 'users' created/verified
+2025-09-17 13:45:57,880 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:45:57,883 INFO Table 'transcripts' created/verified
+2025-09-17 13:45:57,895 INFO Table 'recordings' created/verified
+2025-09-17 13:45:57,896 INFO Table 'calls' created/verified
+2025-09-17 13:45:57,969 INFO Initializing services...
+2025-09-17 13:45:57,990 INFO VoiceAI application initialized successfully
+2025-09-17 13:45:58,056 WARNING  * Debugger is active!
+2025-09-17 13:45:58,077 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:46:06,726 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:46:07,636 INFO  * Restarting with stat
+2025-09-17 13:46:18,480 INFO Initializing database...
+2025-09-17 13:46:18,564 INFO Table 'users' created/verified
+2025-09-17 13:46:18,566 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:46:18,572 INFO Table 'transcripts' created/verified
+2025-09-17 13:46:18,575 INFO Table 'recordings' created/verified
+2025-09-17 13:46:18,576 INFO Table 'calls' created/verified
+2025-09-17 13:46:18,636 INFO Initializing services...
+2025-09-17 13:46:18,649 INFO VoiceAI application initialized successfully
+2025-09-17 13:46:18,667 WARNING  * Debugger is active!
+2025-09-17 13:46:18,677 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:46:39,757 INFO  * Detected change in 'D:\\AGENTIC-AI\\ECommerceAIAgent\\TwilioVoicePython\\app\\routes.py', reloading
+2025-09-17 13:46:41,224 INFO  * Restarting with stat
+2025-09-17 13:46:49,433 INFO Initializing database...
+2025-09-17 13:46:49,516 INFO Table 'users' created/verified
+2025-09-17 13:46:49,516 INFO Table 'password_reset_tokens' created/verified
+2025-09-17 13:46:49,516 INFO Table 'transcripts' created/verified
+2025-09-17 13:46:49,516 INFO Table 'recordings' created/verified
+2025-09-17 13:46:49,516 INFO Table 'calls' created/verified
+2025-09-17 13:46:49,592 INFO Initializing services...
+2025-09-17 13:46:49,610 INFO VoiceAI application initialized successfully
+2025-09-17 13:46:49,642 WARNING  * Debugger is active!
+2025-09-17 13:46:49,675 INFO  * Debugger PIN: 105-958-980
+2025-09-17 13:46:50,031 INFO 127.0.0.1 - - [17/Sep/2025 13:46:50] "GET /api/twilio/my-numbers HTTP/1.1" 200 -
+2025-09-17 13:46:50,031 ERROR Get settings error: name 'Config' is not defined
+2025-09-17 13:46:50,031 INFO 127.0.0.1 - - [17/Sep/2025 13:46:50] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-09-17 13:46:50,031 INFO 127.0.0.1 - - [17/Sep/2025 13:46:50] "GET /api/twilio/available-numbers?country=US&type=local&voice_enabled=true&limit=20 HTTP/1.1" 200 -
+2025-09-17 13:46:50,146 INFO 127.0.0.1 - - [17/Sep/2025 13:46:50] "GET /api/auth/me HTTP/1.1" 200 -
+2025-09-17 13:46:50,349 INFO 127.0.0.1 - - [17/Sep/2025 13:46:50] "GET /api/twilio/my-numbers HTTP/1.1" 200 -
+2025-09-17 13:46:50,349 ERROR Get settings error: name 'Config' is not defined
+2025-09-17 13:46:50,349 INFO 127.0.0.1 - - [17/Sep/2025 13:46:50] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-09-17 13:46:53,713 INFO 127.0.0.1 - - [17/Sep/2025 13:46:53] "GET /api/twilio/available-numbers?country=US&type=local&voice_enabled=true&limit=20 HTTP/1.1" 200 -
